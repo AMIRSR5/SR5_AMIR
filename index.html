@@ -120,6 +120,47 @@ body{
 /* CANVAS */
 #particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.45}
 
+/* Page transition overlay */
+#pageTransition{
+  position:fixed;inset:0;
+  background:var(--black);
+  z-index:9998;
+  pointer-events:none;
+  opacity:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Courier New',monospace;
+  font-size:14px;color:var(--gold);
+  letter-spacing:3px;
+  overflow:hidden;
+}
+#pageTransition.active{
+  pointer-events:all;
+  animation:ptIn 0.6s ease forwards;
+}
+#pageTransition.exit{
+  animation:ptOut 0.4s ease forwards;
+}
+@keyframes ptIn{
+  0%{opacity:0;clip-path:circle(0% at 50% 50%)}
+  100%{opacity:1;clip-path:circle(150% at 50% 50%)}
+}
+@keyframes ptOut{
+  0%{opacity:1}
+  100%{opacity:0}
+}
+.pt-code{
+  position:absolute;inset:0;
+  overflow:hidden;opacity:0.08;
+  font-size:11px;line-height:1.5;
+  color:var(--gold);
+  white-space:pre;
+  animation:ptCode 0.6s ease forwards;
+}
+@keyframes ptCode{
+  from{opacity:0;transform:scale(1.1)}
+  to{opacity:0.08;transform:scale(1)}
+}
+
 /* NAV */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:1000;
@@ -187,10 +228,21 @@ nav{
 /* Code Rain Effect */
 .menu-code-rain{
   position:absolute;inset:0;overflow:hidden;
-  opacity:0.04;pointer-events:none;
+  opacity:0.06;pointer-events:none;
   font-family:'Courier New',monospace;
-  font-size:12px;color:var(--gold);
-  line-height:1.4;letter-spacing:2px;
+  font-size:13px;color:var(--gold);
+  line-height:1.6;letter-spacing:3px;
+}
+.code-col{
+  position:absolute;top:0;
+  display:flex;flex-direction:column;
+  animation:codefall linear infinite;
+}
+@keyframes codefall{
+  0%{transform:translateY(-100%);opacity:0}
+  10%{opacity:1}
+  90%{opacity:0.5}
+  100%{transform:translateY(100vh);opacity:0}
 }
 
 .menu-links{
@@ -465,6 +517,11 @@ footer span{color:var(--gold);font-weight:600}
 
 <canvas id="particles"></canvas>
 
+<!-- Page Transition Overlay -->
+<div id="pageTransition">
+  <div class="pt-code" id="ptCode"></div>
+</div>
+
 <!-- SKILL MODAL -->
 <div class="skill-modal-overlay" id="skillModal" onclick="closeModal(event)">
   <div class="skill-modal">
@@ -503,11 +560,11 @@ footer span{color:var(--gold);font-weight:600}
     <div class="menu-close" onclick="closeMenu()">✕</div>
     <div class="menu-code-rain" id="codeRain"></div>
     <ul class="menu-links">
-      <li><a href="#home" onclick="closeMenu()"><span class="menu-num">01</span>خانه<span class="menu-arrow">→</span></a></li>
-      <li><a href="#skills" onclick="closeMenu()"><span class="menu-num">02</span>مهارت‌ها<span class="menu-arrow">→</span></a></li>
-      <li><a href="#apps" onclick="closeMenu()"><span class="menu-num">03</span>برنامه‌ها<span class="menu-arrow">→</span></a></li>
-      <li><a href="#about" onclick="closeMenu()"><span class="menu-num">04</span>درباره ما<span class="menu-arrow">→</span></a></li>
-      <li><a href="#contact" onclick="closeMenu()"><span class="menu-num">05</span>تماس<span class="menu-arrow">→</span></a></li>
+      <li><a href="#home" onclick="navigateTo(event,'#home')"><span class="menu-num">01</span>خانه<span class="menu-arrow">→</span></a></li>
+      <li><a href="#skills" onclick="navigateTo(event,'#skills')"><span class="menu-num">02</span>مهارت‌ها<span class="menu-arrow">→</span></a></li>
+      <li><a href="#apps" onclick="navigateTo(event,'#apps')"><span class="menu-num">03</span>برنامه‌ها<span class="menu-arrow">→</span></a></li>
+      <li><a href="#about" onclick="navigateTo(event,'#about')"><span class="menu-num">04</span>درباره ما<span class="menu-arrow">→</span></a></li>
+      <li><a href="#contact" onclick="navigateTo(event,'#contact')"><span class="menu-num">05</span>تماس<span class="menu-arrow">→</span></a></li>
     </ul>
     <div class="menu-footer">AMIR_SR5 © 2026</div>
   </div>
@@ -759,9 +816,31 @@ function animP(){
 animP();
 
 // ── Hamburger Menu ────────────────────────────────────────────
+const codeSnippets = [
+  'const dev = new AMIR_SR5();',
+  'await dev.build("portfolio");',
+  'function createMagic() {',
+  '  return React.createElement(',
+  '    "div", {className: "world"},',
+  '  );',
+  '}',
+  'import { useState } from "react";',
+  'const [skill, setSkill] = useState(100);',
+  'export default function App() {',
+  'git commit -m "level up 🚀"',
+  'npm run dev',
+  'console.log("AMIR_SR5 online");',
+  'while(true) { learn(); build(); }',
+  '<PWA performance={100} />',
+  'const future = async () => {',
+  '  await Promise.all([dream, code]);',
+  '};',
+  '// Full-Stack Developer',
+  'if (passion > limit) deploy();',
+];
+
 function toggleMenu() {
   const overlay = document.getElementById('menuOverlay');
-  const btn = document.getElementById('hamburger');
   const isOpen = overlay.classList.contains('open');
   if (isOpen) closeMenu();
   else openMenu();
@@ -785,34 +864,50 @@ function closeMenu() {
   stopCodeRain();
 }
 
-// Code rain effect
-let codeRainInterval = null;
-const codeChars = '01アイウエオカキクケコ</>{}[]();=>const let var function async await import export class';
+// Navigate with transition
+function navigateTo(e, target) {
+  e.preventDefault();
+  closeMenu();
 
+  const pt = document.getElementById('pageTransition');
+  const ptCode = document.getElementById('ptCode');
+  
+  // Fill with code snippets
+  ptCode.textContent = Array(30).fill(0)
+    .map(() => codeSnippets[Math.floor(Math.random() * codeSnippets.length)])
+    .join('\n');
+
+  pt.classList.add('active');
+
+  setTimeout(() => {
+    const el = document.querySelector(target);
+    if (el) el.scrollIntoView({behavior:'instant'});
+    pt.classList.remove('active');
+    pt.classList.add('exit');
+    setTimeout(() => pt.classList.remove('exit'), 400);
+  }, 500);
+}
+
+// Code rain in menu
 function startCodeRain() {
   const container = document.getElementById('codeRain');
   if (!container) return;
   container.innerHTML = '';
-  const cols = Math.floor(window.innerWidth / 14);
-  
+  const cols = Math.floor(window.innerWidth / 16);
   for (let i = 0; i < cols; i++) {
     const col = document.createElement('div');
-    col.style.cssText = `position:absolute;top:0;left:${i*14}px;width:14px;display:flex;flex-direction:column;`;
-    const colHeight = Math.floor(Math.random() * 20) + 5;
-    for (let j = 0; j < colHeight; j++) {
+    col.className = 'code-col';
+    col.style.left = (i * 16) + 'px';
+    col.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    col.style.animationDelay = (Math.random() * 3) + 's';
+    const lines = Math.floor(Math.random() * 8) + 3;
+    for (let j = 0; j < lines; j++) {
       const span = document.createElement('span');
-      span.textContent = codeChars[Math.floor(Math.random() * codeChars.length)];
-      span.style.animation = `fadeChar ${Math.random()*2+1}s ease ${Math.random()*3}s infinite`;
+      span.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)]
+        .split('')[Math.floor(Math.random() * 10)] || '0';
       col.appendChild(span);
     }
     container.appendChild(col);
-  }
-
-  if (!document.getElementById('codeRainStyle')) {
-    const style = document.createElement('style');
-    style.id = 'codeRainStyle';
-    style.textContent = '@keyframes fadeChar{0%,100%{opacity:0.02}50%{opacity:0.15}}';
-    document.head.appendChild(style);
   }
 }
 
@@ -821,7 +916,6 @@ function stopCodeRain() {
   if (container) container.innerHTML = '';
 }
 
-// Close menu on Escape
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeMenu();
 });

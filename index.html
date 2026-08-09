@@ -210,8 +210,10 @@ nav{
   position:absolute;inset:0;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
+  text-align:center;
   opacity:0;transform:translateY(20px);
   transition:opacity 0.4s ease 0.3s,transform 0.4s ease 0.3s;
+  z-index:5;
 }
 .menu-overlay.open .menu-content{opacity:1;transform:translateY(0)}
 
@@ -228,74 +230,165 @@ nav{
 /* Code Rain Effect */
 .menu-code-rain{
   position:absolute;inset:0;overflow:hidden;
-  opacity:0.06;pointer-events:none;
+  pointer-events:none;
   font-family:'Courier New',monospace;
-  font-size:13px;color:var(--gold);
-  line-height:1.6;letter-spacing:3px;
+  font-size:14px;
+  line-height:1.4;
 }
 .code-col{
-  position:absolute;top:0;
+  position:absolute;top:-100%;
   display:flex;flex-direction:column;
   animation:codefall linear infinite;
+  gap:2px;
+}
+.code-col span{
+  display:block;
+  text-shadow:0 0 8px currentColor;
+}
+.code-col span.bright{
+  color:#00ff41;
+  opacity:1;
+  text-shadow:0 0 12px #00ff41, 0 0 20px #00ff41;
+}
+.code-col span.mid{
+  color:#00cc33;
+  opacity:0.7;
+}
+.code-col span.dim{
+  color:#006618;
+  opacity:0.3;
 }
 @keyframes codefall{
-  0%{transform:translateY(-100%);opacity:0}
-  10%{opacity:1}
-  90%{opacity:0.5}
-  100%{transform:translateY(100vh);opacity:0}
+  0%{top:-100%;opacity:0}
+  5%{opacity:1}
+  95%{opacity:1}
+  100%{top:100vh;opacity:0}
+}
+/* Click ripple effect */
+.menu-ripple{
+  position:absolute;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(0,255,65,0.4) 0%, rgba(0,255,65,0.1) 50%, transparent 70%);
+  transform:scale(0);
+  animation:rippleOut 0.8s ease forwards;
+  pointer-events:none;
+  z-index:10;
+}
+@keyframes rippleOut{
+  0%{transform:scale(0);opacity:1}
+  100%{transform:scale(4);opacity:0}
+}
+/* Menu item click effect */
+.menu-links li a.clicked{
+  color:#00ff41 !important;
+  text-shadow:0 0 20px #00ff41, 0 0 40px #00ff41;
+  animation:glitch 0.3s ease;
+}
+@keyframes glitch{
+  0%{transform:translateX(0)}
+  20%{transform:translateX(-4px) skewX(2deg)}
+  40%{transform:translateX(4px) skewX(-2deg)}
+  60%{transform:translateX(-2px)}
+  80%{transform:translateX(2px)}
+  100%{transform:translateX(0)}
 }
 
+.menu-canvas{
+  position:absolute;inset:0;
+  z-index:0;pointer-events:none;
+  opacity:0.45;
+}
 .menu-links{
   list-style:none;text-align:center;
-  position:relative;z-index:1;
+  position:relative;z-index:10;
 }
 .menu-links li{
-  overflow:hidden;margin:0.4rem 0;
+  margin:0.3rem 0;
+  overflow:hidden;
+  width:100%;
+  text-align:center;
 }
 .menu-links li a{
   display:flex;align-items:center;justify-content:center;gap:1rem;
   font-family:'Orbitron',sans-serif;
-  font-size:clamp(1.5rem,5vw,2.5rem);
-  font-weight:700;color:var(--text);
-  text-decoration:none;padding:0.5rem 2rem;
-  transition:all 0.3s;position:relative;
+  font-size:clamp(1.6rem,5.5vw,2.4rem);
+  font-weight:700;
+  color:#ffffff;
+  text-decoration:none;
+  padding:0.35rem 1.5rem;
+  position:relative;
   letter-spacing:2px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-shadow:0 2px 15px rgba(0,0,0,0.9), 0 0 2px #000;
+  width:100%;
+  justify-content:center;
 }
-.menu-links li a::before{
-  content:'';position:absolute;bottom:0;left:50%;right:50%;
-  height:1px;background:var(--gold);
+.menu-links li a:hover .menu-text,
+.menu-links li a:focus .menu-text{
+  color:var(--gold);
+  text-shadow:
+    0 0 20px rgba(201,168,76,0.9),
+    0 0 40px rgba(201,168,76,0.5);
+  letter-spacing:5px;
+}
+.menu-text{
+  display:inline-block;
   transition:all 0.3s;
+  position:relative;
+  color:#ffffff;
+  text-shadow:0 0 2px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,0.8);
 }
-.menu-links li a:hover{color:var(--gold)}
-.menu-links li a:hover::before{left:10%;right:10%}
+.menu-text.shatter{
+  animation:shatterText 0.5s ease forwards;
+}
+@keyframes shatterText{
+  0%{transform:scale(1);opacity:1;filter:blur(0);color:var(--text)}
+  20%{transform:scale(1.15) skewX(-8deg);color:var(--gold);filter:blur(0);
+      text-shadow:0 0 20px var(--gold),0 0 40px var(--gold)}
+  50%{transform:scale(0.9) skewX(5deg);opacity:0.5;filter:blur(3px)}
+  100%{transform:scale(1.2);opacity:0;filter:blur(10px)}
+}
 .menu-num{
-  font-size:0.7rem;color:var(--gold);
-  opacity:0.6;letter-spacing:3px;
-  align-self:flex-start;margin-top:0.5rem;
+  font-size:0.65rem;color:var(--gold);
+  opacity:0.5;letter-spacing:4px;
+  align-self:flex-start;margin-top:0.8rem;
+  font-weight:400;
 }
-.menu-arrow{
-  font-size:1rem;opacity:0;
-  transform:translateX(-10px);
-  transition:all 0.3s;
-}
-.menu-links li a:hover .menu-arrow{opacity:1;transform:translateX(0)}
 
 .menu-footer{
   position:absolute;bottom:2rem;
   font-family:'Orbitron',sans-serif;
   font-size:11px;color:var(--text-muted);
-  letter-spacing:3px;
+  letter-spacing:3px;z-index:2;
 }
 
-/* Stagger animation for menu items */
-.menu-overlay.open .menu-links li:nth-child(1) a{animation:menuItemIn 0.4s ease 0.35s both}
-.menu-overlay.open .menu-links li:nth-child(2) a{animation:menuItemIn 0.4s ease 0.42s both}
-.menu-overlay.open .menu-links li:nth-child(3) a{animation:menuItemIn 0.4s ease 0.49s both}
-.menu-overlay.open .menu-links li:nth-child(4) a{animation:menuItemIn 0.4s ease 0.56s both}
-.menu-overlay.open .menu-links li:nth-child(5) a{animation:menuItemIn 0.4s ease 0.63s both}
+/* Stagger animation */
+.menu-overlay.open .menu-links li:nth-child(1) a{animation:menuItemIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.25s both}
+.menu-overlay.open .menu-links li:nth-child(2) a{animation:menuItemIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.33s both}
+.menu-overlay.open .menu-links li:nth-child(3) a{animation:menuItemIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.41s both}
+.menu-overlay.open .menu-links li:nth-child(4) a{animation:menuItemIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.49s both}
+.menu-overlay.open .menu-links li:nth-child(5) a{animation:menuItemIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.57s both}
 @keyframes menuItemIn{
-  from{opacity:0;transform:translateY(30px)}
-  to{opacity:1;transform:translateY(0)}
+  from{opacity:0;transform:translateX(40px) skewX(-10deg)}
+  to{opacity:1;transform:translateX(0) skewX(0)}
+}
+@keyframes fragFly{
+  0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0.2) rotate(720deg)}
+}
+
+/* Click ripple */
+.menu-ripple{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,0.5) 0%,rgba(201,168,76,0.1) 50%,transparent 70%);
+  transform:scale(0);
+  animation:rippleOut 0.7s ease forwards;
+  pointer-events:none;z-index:10;
+}
+@keyframes rippleOut{
+  0%{transform:scale(0);opacity:1}
+  100%{transform:scale(5);opacity:0}
 }
 
 /* SECTIONS */
@@ -556,15 +649,15 @@ footer span{color:var(--gold);font-weight:600}
 <!-- Full Screen Menu Overlay -->
 <div class="menu-overlay" id="menuOverlay">
   <div class="menu-overlay-bg" id="menuBg"></div>
+  <canvas class="menu-canvas" id="menuCanvas"></canvas>
   <div class="menu-content" id="menuContent">
     <div class="menu-close" onclick="closeMenu()">✕</div>
-    <div class="menu-code-rain" id="codeRain"></div>
-    <ul class="menu-links">
-      <li><a href="#home" onclick="navigateTo(event,'#home')"><span class="menu-num">01</span>خانه<span class="menu-arrow">→</span></a></li>
-      <li><a href="#skills" onclick="navigateTo(event,'#skills')"><span class="menu-num">02</span>مهارت‌ها<span class="menu-arrow">→</span></a></li>
-      <li><a href="#apps" onclick="navigateTo(event,'#apps')"><span class="menu-num">03</span>برنامه‌ها<span class="menu-arrow">→</span></a></li>
-      <li><a href="#about" onclick="navigateTo(event,'#about')"><span class="menu-num">04</span>درباره ما<span class="menu-arrow">→</span></a></li>
-      <li><a href="#contact" onclick="navigateTo(event,'#contact')"><span class="menu-num">05</span>تماس<span class="menu-arrow">→</span></a></li>
+    <ul class="menu-links" id="menuLinks">
+      <li><a href="#home" onclick="navigateTo(event,'#home')"><span class="menu-text">خانه</span></a></li>
+      <li><a href="#skills" onclick="navigateTo(event,'#skills')"><span class="menu-text">مهارت‌ها</span></a></li>
+      <li><a href="#apps" onclick="navigateTo(event,'#apps')"><span class="menu-text">برنامه‌ها</span></a></li>
+      <li><a href="#about" onclick="navigateTo(event,'#about')"><span class="menu-text">درباره ما</span></a></li>
+      <li><a href="#contact" onclick="navigateTo(event,'#contact')"><span class="menu-text">تماس</span></a></li>
     </ul>
     <div class="menu-footer">AMIR_SR5 © 2026</div>
   </div>
@@ -862,58 +955,118 @@ function closeMenu() {
   btn.classList.remove('active');
   document.body.style.overflow = '';
   stopCodeRain();
+  // Reset all shattered texts
+  setTimeout(() => {
+    document.querySelectorAll('.menu-text').forEach(el => {
+      el.classList.remove('shatter');
+      el.style.opacity = '1';
+    });
+  }, 300);
 }
 
-// Navigate with transition
+// Navigate with shatter + ripple
 function navigateTo(e, target) {
   e.preventDefault();
-  closeMenu();
+  const link = e.currentTarget;
+  const textEl = link.querySelector('.menu-text');
 
-  const pt = document.getElementById('pageTransition');
-  const ptCode = document.getElementById('ptCode');
-  
-  // Fill with code snippets
-  ptCode.textContent = Array(30).fill(0)
-    .map(() => codeSnippets[Math.floor(Math.random() * codeSnippets.length)])
-    .join('\n');
+  // 1. Gold ripple
+  const overlay = document.getElementById('menuOverlay');
+  const ripple = document.createElement('div');
+  ripple.className = 'menu-ripple';
+  const size = Math.max(window.innerWidth, window.innerHeight) * 3;
+  ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-size/2}px;top:${e.clientY-size/2}px;`;
+  overlay.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 700);
 
-  pt.classList.add('active');
+  // 2. Shatter text
+  if (textEl) {
+    textEl.classList.add('shatter');
+    // Create particle fragments
+    const txt = textEl.textContent;
+    const rect = textEl.getBoundingClientRect();
+    for (let i = 0; i < 12; i++) {
+      const frag = document.createElement('span');
+      frag.textContent = txt[Math.floor(Math.random()*txt.length)] || txt[0];
+      frag.style.cssText = `
+        position:fixed;
+        left:${rect.left + Math.random()*rect.width}px;
+        top:${rect.top + Math.random()*rect.height}px;
+        color:var(--gold);
+        font-family:'Orbitron',sans-serif;
+        font-size:${Math.random()*20+10}px;
+        font-weight:900;
+        pointer-events:none;
+        z-index:9999;
+        text-shadow:0 0 10px var(--gold);
+        animation:fragFly ${Math.random()*0.4+0.3}s ease forwards;
+        --tx:${(Math.random()-0.5)*200}px;
+        --ty:${(Math.random()-0.5)*200}px;
+      `;
+      document.body.appendChild(frag);
+      setTimeout(() => frag.remove(), 600);
+    }
+  }
 
+  // 3. Navigate after short delay
   setTimeout(() => {
+    closeMenu();
     const el = document.querySelector(target);
-    if (el) el.scrollIntoView({behavior:'instant'});
-    pt.classList.remove('active');
-    pt.classList.add('exit');
-    setTimeout(() => pt.classList.remove('exit'), 400);
-  }, 500);
+    if (el) el.scrollIntoView({behavior:'smooth'});
+  }, 350);
 }
 
 // Code rain in menu
+// Matrix canvas rain
+let matrixRafId = null;
+const matrixChars = '01アイウエカキconst let async await=>{}[]();function return import class';
+
 function startCodeRain() {
-  const container = document.getElementById('codeRain');
-  if (!container) return;
-  container.innerHTML = '';
-  const cols = Math.floor(window.innerWidth / 16);
-  for (let i = 0; i < cols; i++) {
-    const col = document.createElement('div');
-    col.className = 'code-col';
-    col.style.left = (i * 16) + 'px';
-    col.style.animationDuration = (Math.random() * 3 + 2) + 's';
-    col.style.animationDelay = (Math.random() * 3) + 's';
-    const lines = Math.floor(Math.random() * 8) + 3;
-    for (let j = 0; j < lines; j++) {
-      const span = document.createElement('span');
-      span.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)]
-        .split('')[Math.floor(Math.random() * 10)] || '0';
-      col.appendChild(span);
+  const canvas = document.getElementById('menuCanvas');
+  if (!canvas) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const fontSize = 16;
+  const spacing = 36; // wider spacing = fewer columns
+  const cols = Math.floor(canvas.width / spacing);
+  const drops = Array(cols).fill(0).map(() => Math.random() * -80);
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < drops.length; i++) {
+      const ch = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+      // Bright white head
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = 'bold ' + fontSize + 'px Courier New';
+      ctx.fillText(ch, i * spacing, drops[i] * fontSize);
+      // Gold mid trail
+      ctx.fillStyle = 'rgba(201,168,76,0.7)';
+      ctx.font = fontSize + 'px Courier New';
+      for(let t=1;t<4;t++){
+        const c = matrixChars[Math.floor(Math.random()*matrixChars.length)];
+        if(drops[i]-t > 0) ctx.fillText(c, i*spacing, (drops[i]-t)*fontSize);
+      }
+      // Dim tail
+      ctx.fillStyle = 'rgba(201,168,76,0.2)';
+      for(let t=4;t<8;t++){
+        const c = matrixChars[Math.floor(Math.random()*matrixChars.length)];
+        if(drops[i]-t > 0) ctx.fillText(c, i*spacing, (drops[i]-t)*fontSize);
+      }
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.97) drops[i] = 0;
+      drops[i] += 0.4;
     }
-    container.appendChild(col);
+    matrixRafId = requestAnimationFrame(drawMatrix);
   }
+  drawMatrix();
 }
 
 function stopCodeRain() {
-  const container = document.getElementById('codeRain');
-  if (container) container.innerHTML = '';
+  if (matrixRafId) { cancelAnimationFrame(matrixRafId); matrixRafId = null; }
+  const canvas = document.getElementById('menuCanvas');
+  if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height); }
 }
 
 document.addEventListener('keydown', e => {

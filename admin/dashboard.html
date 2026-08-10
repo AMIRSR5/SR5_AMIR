@@ -681,14 +681,12 @@ async function authGuard() {
   currentUser = session.user;
   document.getElementById('adminEmail').textContent = '👤 ' + currentUser.email;
 
-  // Listen for auth changes
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT' || !session) {
       window.location.href = 'index.html';
     }
   });
 
-  // Load initial data
   await loadDashboard();
 }
 
@@ -722,6 +720,7 @@ function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('show');
 }
+
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
@@ -744,7 +743,6 @@ function toast(msg, type='success') {
 // ============================================================
 async function loadDashboard() {
   try {
-    // Try to get counts - these tables might not exist yet
     const results = await Promise.allSettled([
       sb.from('projects').select('*', { count: 'exact', head: true }),
       sb.from('blog_posts').select('*', { count: 'exact', head: true }),
@@ -881,14 +879,27 @@ function removeSkill(i) {
 
 async function saveSkills() {
   try {
-    // Delete all and re-insert
-    await sb.from('skills').delete().neq('id', 0);
-    const inserts = skillsData.map((s, i) => ({
-      name: s.name, level: s.level, sort_order: i + 1
-    }));
-    const { error } = await sb.from('skills').insert(inserts);
-    if (error) throw error;
+    const { data: existing } = await sb.from('skills').select('id');
+    if (existing && existing.length > 0) {
+      const ids = existing.map(r => r.id);
+      await sb.from('skills').delete().in('id', ids);
+    }
+
+    const inserts = skillsData
+      .filter(s => s.name && s.name.trim())
+      .map((s, i) => ({
+        name: s.name.trim(),
+        level: s.level,
+        sort_order: i + 1
+      }));
+
+    if (inserts.length > 0) {
+      const { error } = await sb.from('skills').insert(inserts);
+      if (error) throw error;
+    }
+
     toast('✅ مهارت‌ها ذخیره شدند');
+    await loadSkills();
   } catch(e) {
     toast('خطا: ' + e.message, 'error');
   }
@@ -915,9 +926,11 @@ function renderProjectsTable() {
     container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:1rem">هیچ پروژه‌ای ثبت نشده.</p>';
     return;
   }
+
   let html = `<table><thead><tr>
     <th>عنوان</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th>
   </tr></thead><tbody>`;
+
   projectsData.forEach(p => {
     html += `<tr>
       <td>${p.title}</td>
@@ -929,6 +942,7 @@ function renderProjectsTable() {
       </td>
     </tr>`;
   });
+
   html += '</tbody></table>';
   container.innerHTML = html;
 }
@@ -945,6 +959,7 @@ function showAddProject() {
 function editProject(id) {
   const p = projectsData.find(x => x.id === id);
   if (!p) return;
+
   document.getElementById('project-form').style.display = 'block';
   document.getElementById('project-form-title').textContent = 'ویرایش پروژه';
   document.getElementById('p-id').value = p.id;
@@ -956,12 +971,15 @@ function editProject(id) {
   document.getElementById('p-tech').value = (p.technologies || []).join(', ');
   document.getElementById('p-status').value = p.status || 'published';
   document.getElementById('p-icon-url').value = p.icon_url || '';
+
   const preview = document.getElementById('p-icon-preview');
+
   if (p.icon_url) {
     preview.innerHTML = `<img src="${p.icon_url}" style="width:100%;height:100%;object-fit:cover">`;
   } else {
     preview.innerHTML = '<span style="font-size:1.5rem">📦</span>';
   }
+
   document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
 }
 
@@ -969,6 +987,7 @@ function cancelProject() {
   document.getElementById('project-form').style.display = 'none';
   document.getElementById('p-icon-file').value = '';
   document.getElementById('p-icon-url').value = '';
+
   const preview = document.getElementById('p-icon-preview');
   if (preview) preview.innerHTML = '<span style="font-size:1.5rem">📦</span>';
 }
@@ -977,284 +996,12 @@ async function saveProject() {
   const id = document.getElementById('p-id').value;
   const title = document.getElementById('p-title').value;
 
-  // Upload icon if selected
   const iconFile = document.getElementById('p-icon-file').files[0];
   let iconUrl = document.getElementById('p-icon-url').value;
+
   if (iconFile) {
     const uploaded = await uploadProjectIcon(iconFile, title);
     if (uploaded) iconUrl = uploaded;
   }
 
   const data = {
-    title,
-    subtitle: document.getElementById('p-subtitle').value,
-    description: document.getElementById('p-desc').value,
-    demo_url: document.getElementById('p-url').value,
-    apk_url: document.getElementById('p-apk').value,
-    technologies: document.getElementById('p-tech').value.split(',').map(s=>s.trim()).filter(Boolean),
-    icon_url: iconUrl || null,
-    status: document.getElementById('p-status').value,
-    updated_at: new Date().toISOString()
-  };
-
-  try {
-    if (id) {
-      const { error } = await sb.from('projects').update(data).eq('id', id);
-      if (error) throw error;
-    } else {
-      data.created_at = new Date().toISOString();
-      data.sort_order = projectsData.length + 1;
-      const { error } = await sb.from('projects').insert(data);
-      if (error) throw error;
-    }
-    toast('✅ پروژه ذخیره شد');
-    cancelProject();
-    loadProjects();
-  } catch(e) {
-    toast('خطا: ' + e.message, 'error');
-  }
-}
-
-async function deleteProject(id) {
-  if (!confirm('آیا مطمئنید؟ این عمل برگشت‌پذیر نیست.')) return;
-  const { error } = await sb.from('projects').delete().eq('id', id);
-  if (error) toast('خطا: ' + error.message, 'error');
-  else { toast('✅ پروژه حذف شد'); loadProjects(); }
-}
-
-// ============================================================
-// BLOG
-// ============================================================
-async function loadPosts() {
-  const container = document.getElementById('posts-table');
-  container.innerHTML = '<div class="loading"><div class="spinner-lg"></div></div>';
-  try {
-    const { data } = await sb.from('blog_posts').select('*').order('created_at', { ascending: false });
-    postsData = data || [];
-    renderPostsTable();
-  } catch(e) {
-    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:1rem">جدول blog_posts هنوز ساخته نشده. SQL را اجرا کنید.</p>';
-  }
-}
-
-function renderPostsTable() {
-  const container = document.getElementById('posts-table');
-  if (!postsData.length) {
-    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:1rem">هیچ مقاله‌ای ثبت نشده.</p>';
-    return;
-  }
-  let html = `<table><thead><tr>
-    <th>عنوان</th><th>وضعیت</th><th>دسته</th><th>تاریخ</th><th>عملیات</th>
-  </tr></thead><tbody>`;
-  postsData.forEach(p => {
-    html += `<tr>
-      <td>${p.title}</td>
-      <td><span class="badge ${p.status==='published'?'badge-green':'badge-gray'}">${p.status==='published'?'منتشر':'پیش‌نویس'}</span></td>
-      <td style="font-size:12px">${p.category||'—'}</td>
-      <td style="font-size:12px;color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('fa-IR')}</td>
-      <td style="display:flex;gap:5px;flex-wrap:wrap">
-        <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editPost('${p.id}')">ویرایش</button>
-        <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deletePost('${p.id}')">حذف</button>
-        <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="togglePublish('${p.id}','${p.status}')">${p.status==='published'?'مخفی':'انتشار'}</button>
-      </td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  container.innerHTML = html;
-}
-
-function showAddPost() {
-  document.getElementById('posts-list-section').style.display = 'none';
-  document.getElementById('post-editor').style.display = 'block';
-  document.getElementById('editor-title').textContent = 'مقاله جدید';
-  document.getElementById('post-id').value = '';
-  ['post-title','post-slug','post-excerpt','post-content','post-category','post-tags',
-   'post-seo-title','post-seo-desc','post-seo-kw','post-seo-canonical','post-og-title','post-og-desc']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('post-status').value = 'draft';
-  document.getElementById('post-noindex').checked = false;
-
-  // Auto-generate slug from title
-  document.getElementById('post-title').addEventListener('input', function() {
-    const slug = this.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-    document.getElementById('post-slug').value = slug;
-  });
-}
-
-function editPost(id) {
-  const p = postsData.find(x => x.id === id);
-  if (!p) return;
-  document.getElementById('posts-list-section').style.display = 'none';
-  document.getElementById('post-editor').style.display = 'block';
-  document.getElementById('editor-title').textContent = 'ویرایش مقاله';
-  document.getElementById('post-id').value = p.id;
-  document.getElementById('post-title').value = p.title || '';
-  document.getElementById('post-slug').value = p.slug || '';
-  document.getElementById('post-excerpt').value = p.excerpt || '';
-  document.getElementById('post-content').value = p.content || '';
-  document.getElementById('post-category').value = p.category || '';
-  document.getElementById('post-tags').value = (p.tags||[]).join(', ');
-  document.getElementById('post-status').value = p.status || 'draft';
-  const seo = p.seo_data || {};
-  document.getElementById('post-seo-title').value = seo.title || '';
-  document.getElementById('post-seo-desc').value = seo.description || '';
-  document.getElementById('post-seo-kw').value = seo.keyword || '';
-  document.getElementById('post-seo-canonical').value = seo.canonical || '';
-  document.getElementById('post-og-title').value = seo.og_title || '';
-  document.getElementById('post-og-desc').value = seo.og_desc || '';
-  document.getElementById('post-noindex').checked = seo.noindex || false;
-}
-
-function cancelPost() {
-  document.getElementById('post-editor').style.display = 'none';
-  document.getElementById('posts-list-section').style.display = 'block';
-}
-
-async function savePost(statusOverride) {
-  const id = document.getElementById('post-id').value;
-  const status = statusOverride || document.getElementById('post-status').value;
-  const title = document.getElementById('post-title').value;
-
-  const seo_data = {
-    title: document.getElementById('post-seo-title').value || title,
-    description: document.getElementById('post-seo-desc').value,
-    keyword: document.getElementById('post-seo-kw').value,
-    canonical: document.getElementById('post-seo-canonical').value,
-    og_title: document.getElementById('post-og-title').value || title,
-    og_desc: document.getElementById('post-og-desc').value,
-    noindex: document.getElementById('post-noindex').checked
-  };
-
-  const data = {
-    title,
-    slug: document.getElementById('post-slug').value || title.toLowerCase().replace(/\s+/g,'-'),
-    excerpt: document.getElementById('post-excerpt').value,
-    content: document.getElementById('post-content').value,
-    category: document.getElementById('post-category').value,
-    tags: document.getElementById('post-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
-    status,
-    seo_data,
-    updated_at: new Date().toISOString()
-  };
-
-  if (status === 'published' && !data.published_at) {
-    data.published_at = new Date().toISOString();
-  }
-
-  try {
-    if (id) {
-      const { error } = await sb.from('blog_posts').update(data).eq('id', id);
-      if (error) throw error;
-    } else {
-      data.created_at = new Date().toISOString();
-      const { error } = await sb.from('blog_posts').insert(data);
-      if (error) throw error;
-    }
-    toast(status === 'published' ? '🚀 مقاله منتشر شد' : '💾 پیش‌نویس ذخیره شد');
-    cancelPost();
-    loadPosts();
-  } catch(e) {
-    toast('خطا: ' + e.message, 'error');
-  }
-}
-
-async function togglePublish(id, currentStatus) {
-  const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-  const { error } = await sb.from('blog_posts').update({
-    status: newStatus,
-    published_at: newStatus === 'published' ? new Date().toISOString() : null
-  }).eq('id', id);
-  if (error) toast('خطا: ' + error.message, 'error');
-  else { toast(newStatus === 'published' ? '🚀 منتشر شد' : '✅ مخفی شد'); loadPosts(); }
-}
-
-async function deletePost(id) {
-  if (!confirm('آیا مطمئنید؟ مقاله حذف خواهد شد.')) return;
-  const { error } = await sb.from('blog_posts').delete().eq('id', id);
-  if (error) toast('خطا: ' + error.message, 'error');
-  else { toast('✅ مقاله حذف شد'); loadPosts(); }
-}
-
-function previewPost() {
-  const title = document.getElementById('post-title').value;
-  const content = document.getElementById('post-content').value;
-  const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
-    <title>${title}</title>
-    <style>body{font-family:sans-serif;max-width:800px;margin:2rem auto;padding:1rem;line-height:1.8}
-    h1,h2,h3{color:#222}code{background:#f3f3f3;padding:2px 6px;border-radius:4px}
-    blockquote{border-right:4px solid #C9A84C;padding-right:1rem;color:#666;margin:1rem 0}</style>
-    </head><body><h1>${title}</h1><hr>${content}</body></html>`);
-}
-
-// Editor helpers
-function fmt(cmd) {
-  const ta = document.getElementById('post-content');
-  const start = ta.selectionStart, end = ta.selectionEnd;
-  const sel = ta.value.substring(start, end);
-  const tags = { bold: ['<strong>','</strong>'], italic: ['<em>','</em>'] };
-  const [o, c] = tags[cmd];
-  ta.value = ta.value.substring(0, start) + o + sel + c + ta.value.substring(end);
-}
-function insertTag(tag) {
-  const ta = document.getElementById('post-content');
-  const pos = ta.selectionEnd;
-  const insert = `\n<${tag}></${tag}>\n`;
-  ta.value = ta.value.substring(0, pos) + insert + ta.value.substring(pos);
-}
-function insertLink() {
-  const url = prompt('آدرس لینک:');
-  if (!url) return;
-  const ta = document.getElementById('post-content');
-  const start = ta.selectionStart, end = ta.selectionEnd;
-  const sel = ta.value.substring(start, end) || 'متن لینک';
-  ta.value = ta.value.substring(0, start) + `<a href="${url}">${sel}</a>` + ta.value.substring(end);
-}
-function insertList(type) {
-  const ta = document.getElementById('post-content');
-  const pos = ta.selectionEnd;
-  ta.value = ta.value.substring(0, pos) + `\n<${type}>\n  <li>آیتم اول</li>\n  <li>آیتم دوم</li>\n</${type}>\n` + ta.value.substring(pos);
-}
-
-// ============================================================
-// ICON UPLOAD
-// ============================================================
-function previewIcon(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  if (file.size > 2 * 1024 * 1024) {
-    toast('حجم فایل نباید بیشتر از 2MB باشد', 'error');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => {
-    const preview = document.getElementById('p-icon-preview');
-    preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
-  };
-  reader.readAsDataURL(file);
-}
-
-async function uploadProjectIcon(file, projectTitle) {
-  if (!file) return null;
-  try {
-    const ext = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${projectTitle.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
-    const { data, error } = await sb.storage
-      .from('project-icons')
-      .upload(fileName, file, { cacheControl: '3600', upsert: true });
-    if (error) throw error;
-    const { data: urlData } = sb.storage.from('project-icons').getPublicUrl(fileName);
-    return urlData.publicUrl;
-  } catch(e) {
-    toast('خطا در آپلود عکس: ' + e.message, 'error');
-    return null;
-  }
-}
-
-// ============================================================
-// START
-// ============================================================
-authGuard();
-</script>
-</body>
-</html>

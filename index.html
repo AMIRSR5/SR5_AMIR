@@ -18,14 +18,14 @@
 <meta name="robots" content="index, follow">
 <meta name="google-site-verification" content="a66a7d05e736e844">
 <meta name="language" content="Persian">
-<link rel="canonical" href="https://amirsr5.github.io/SR5_AMIR/">
+<link rel="canonical" href="https://amirhooseinsarafraz.ir/">
 
 <!-- Open Graph -->
 <meta property="og:title" content="امیرحسین سرافراز برنامه نویس | Amirhossein Sarafraz">
 <meta property="og:description" content="فول‌استک دولوپر ایرانی با تخصص در React، PWA، JavaScript. مشاهده پروژه‌ها و تماس مستقیم.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://amirsr5.github.io/SR5_AMIR/">
-<meta property="og:image" content="https://amirsr5.github.io/SR5_AMIR/icon.png">
+<meta property="og:url" content="https://amirhooseinsarafraz.ir/">
+<meta property="og:image" content="https://amirhooseinsarafraz.ir/icon.png">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
 <meta property="og:locale" content="fa_IR">
@@ -42,7 +42,7 @@
   "@type": "Person",
   "name": "امیرحسین سرافراز",
   "alternateName": ["Amirhossein Sarafraz", "AMIR_SR5", "SR5", "امیر سرافراز"],
-  "url": "https://amirsr5.github.io/SR5_AMIR/",
+  "url": "https://amirhooseinsarafraz.ir/",
   "jobTitle": "برنامه نویس فول استک",
   "description": "امیرحسین سرافراز برنامه نویس و توسعه دهنده وب ایرانی",
   "knowsAbout": ["JavaScript", "React", "HTML", "CSS", "PWA Development"],
@@ -50,6 +50,7 @@
   "address": {"@type": "PostalAddress", "addressCountry": "IR"},
   "sameAs": [
     "https://github.com/AMIRSR5",
+    "https://amirhooseinsarafraz.ir",
     "https://instagram.com/SALAR_SARAFRAZ",
     "https://amirsr5.github.io/SR5_AMIR/"
   ]
@@ -1112,14 +1113,19 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // ── Icon mapping for skills ───────────────────────────────────
-  const skillIcons = {
-    'html':'🌐','css':'🎨','javascript':'⚡','js':'⚡',
-    'react':'⚛️','pwa':'📱','vue':'💚','node':'🟩',
-    'typescript':'🔷','python':'🐍','git':'🔀','default':'💡'
+  const skillSVGs = {
+    html:`<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 4l2.5 22L16 28l8.5-2L27 4H5z" fill="#E44D26"/><path d="M16 25.5l6.5-1.8L24.5 8H16v17.5z" fill="#F16529"/><path d="M16 14h-4l-.3-3H16V8H8.5l.8 9H16v-3zm0 5.5l-.05.01-3.3-.9-.21-2.4H9.4l.42 4.7 6.13 1.7L16 19.5z" fill="#fff"/><path d="M16 14v3h3.7l-.35 3.9-3.35.9v3.1l6.15-1.7.45-5.1.14-1.6H16v-.5z" fill="#ebebeb"/></svg>`,
+    css:`<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 4l2.5 22L16 28l8.5-2L27 4H5z" fill="#264de4"/><path d="M16 25.5l6.5-1.8L24.5 8H16v17.5z" fill="#2965f1"/><path d="M16 13h4.5l-.3 3.3-4.2 1.2v3.1l6.1-1.7.9-9.9H16v4zm0-5H9.5l.3 3H16V8z" fill="#ebebeb"/><path d="M16 16.5v-3.5h-4.5l.5 5.5 4 1.1v-3.1z" fill="#fff"/></svg>`,
+    javascript:`<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="4" fill="#F7DF1E"/><path d="M9 22.5c.6 1 1.4 1.7 2.8 1.7 1.2 0 2-.6 2-1.4 0-1-.8-1.3-2.1-1.9l-.7-.3c-2.1-.9-3.5-2-3.5-4.4 0-2.2 1.7-3.8 4.3-3.8 1.9 0 3.2.7 4.2 2.4l-2.3 1.5c-.5-.9-1-1.3-1.9-1.3-.9 0-1.4.5-1.4 1.3 0 .9.6 1.2 1.9 1.8l.7.3c2.5 1 3.9 2.1 3.9 4.5 0 2.6-2 4-4.7 4-2.6 0-4.3-1.3-5.1-3l2.9-1.4zm10.3.3c.4.8 1 1.3 2 1.3s1.6-.5 1.6-2.4V13h3v8.8c0 3.9-2.3 5.7-5.7 5.7-3 0-4.8-1.6-5.7-3.5l2.8-1.2z" fill="#323330"/></svg>`,
+    react:`<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="3" fill="#61DAFB"/><ellipse cx="16" cy="16" rx="13" ry="5" stroke="#61DAFB" stroke-width="1.5" fill="none"/><ellipse cx="16" cy="16" rx="13" ry="5" stroke="#61DAFB" stroke-width="1.5" fill="none" transform="rotate(60 16 16)"/><ellipse cx="16" cy="16" rx="13" ry="5" stroke="#61DAFB" stroke-width="1.5" fill="none" transform="rotate(120 16 16)"/></svg>`,
+    pwa:`<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="2" width="20" height="28" rx="3" stroke="#C9A84C" stroke-width="1.5"/><rect x="9" y="5" width="14" height="16" rx="1" fill="#C9A84C" opacity="0.2"/><circle cx="16" cy="26" r="1.5" fill="#C9A84C"/><path d="M12 11l2.5 2.5L20 8" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="16" y="19" text-anchor="middle" fill="#C9A84C" font-size="5" font-weight="bold" font-family="monospace" stroke="none">PWA</text></svg>`,
+    pwadev:`<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="2" width="20" height="28" rx="3" stroke="#C9A84C" stroke-width="1.5"/><path d="M12 11l2.5 2.5L20 8" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="16" y="22" text-anchor="middle" fill="#C9A84C" font-size="5" font-weight="bold" font-family="monospace" stroke="none">PWA</text></svg>`,
+    default:`<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="16,3 20,12 30,12.5 23,19 25,29 16,24 7,29 9,19 2,12.5 12,12" stroke="#C9A84C" stroke-width="1.5" fill="rgba(201,168,76,0.2)"/></svg>`
   };
   function getIcon(name) {
-    const k = name.toLowerCase().replace(/[^a-z]/g,'');
-    return skillIcons[k] || skillIcons['default'];
+    const k = name.toLowerCase().replace(/[\s\-_\.]/g,'').replace('development','dev');
+    const svg = skillSVGs[k] || skillSVGs['default'];
+    return `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center">${svg}</div>`;
   }
 
   // ── Load Site Settings ────────────────────────────────────────
@@ -1220,8 +1226,9 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
         const card = document.createElement('div');
         card.className = 'skill-card';
         card.style.cursor = 'default';
+        const iconHtml2 = getIcon(skill.name);
         card.innerHTML = `
-          <div class="skill-icon-wrap">${getIcon(skill.name)}</div>
+          <div class="skill-icon-wrap" style="padding:8px">${iconHtml2}</div>
           <div class="skill-name">${skill.name.toUpperCase()}</div>
           <div class="skill-click-hint">سطح تسلط: ${skill.level}%</div>
           <div class="skill-bar">

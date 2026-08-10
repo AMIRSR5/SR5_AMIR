@@ -669,7 +669,7 @@ footer span{color:var(--gold);font-weight:600}
 
 <!-- HOME -->
 <section id="home">
-  <div style="margin-bottom:2rem">
+  <div class="hero-glass-card">
     <div id="smartClock">00:00:00</div>
     <div class="clock-date" id="clockDate"></div>
   </div>
@@ -725,6 +725,13 @@ footer span{color:var(--gold);font-weight:600}
     <div class="about-content">
       <h3 id="about-name">امیرحسین سرافراز</h3>
       <div class="about-alias" id="about-alias">@ AMIR_SR5 &nbsp;|&nbsp; FULL-STACK DEVELOPER</div>
+      <!-- Video Section -->
+      <div id="about-video-wrap" style="display:none;margin-bottom:1.5rem;border-radius:12px;overflow:hidden;border:1px solid rgba(201,168,76,0.2);background:#000">
+        <video id="about-video" controls style="width:100%;max-height:220px;display:block"></video>
+      </div>
+      <div id="about-iframe-wrap" style="display:none;margin-bottom:1.5rem;border-radius:12px;overflow:hidden;border:1px solid rgba(201,168,76,0.2)">
+        <iframe id="about-iframe" style="width:100%;height:200px;border:none" allowfullscreen></iframe>
+      </div>
       <div id="about-text-container"><p class="about-text">در دنیایی که هر خط کد می‌تواند آینده را دگرگون کند، امیرحسین سرافراز با ۲۰ سال سن ثابت کرده که سن تنها یک عدد است. با بیش از ۲ سال تجربه عملی در توسعه وب و موبایل، پروژه‌های واقعی برای بازار ایران ساخته.</p><p class="about-text">تخصص اصلی‌اش در ساخت وب‌اپلیکیشن‌های مدرن با React و JavaScript است — کدی تمیز، طراحی‌ای جذاب، و عملکردی که کاربر را شگفت‌زده می‌کند.</p></div>
       <div class="about-stats">
         <div class="stat-item"><div class="stat-num" id="stat-projects-count">+۱۰</div><div class="stat-label">پروژه فعال</div></div>
@@ -1170,6 +1177,27 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
       if (data.age) {
         const el = document.getElementById('stat-age');
         if (el) el.textContent = data.age;
+      }
+
+      // Video
+      if (data.about_video_url) {
+        const vurl = data.about_video_url;
+        if (vurl.includes('youtube') || vurl.includes('youtu.be') || vurl.includes('aparat')) {
+          let embedUrl = vurl;
+          if (vurl.includes('youtu.be/')) {
+            embedUrl = 'https://www.youtube.com/embed/' + vurl.split('youtu.be/')[1].split('?')[0];
+          } else if (vurl.includes('youtube.com/watch')) {
+            const vid = new URL(vurl).searchParams.get('v');
+            if (vid) embedUrl = 'https://www.youtube.com/embed/' + vid;
+          }
+          const iframe = document.getElementById('about-iframe');
+          const wrap = document.getElementById('about-iframe-wrap');
+          if (iframe && wrap) { iframe.src = embedUrl; wrap.style.display = 'block'; }
+        } else {
+          const video = document.getElementById('about-video');
+          const wrap = document.getElementById('about-video-wrap');
+          if (video && wrap) { video.src = vurl; wrap.style.display = 'block'; }
+        }
       }
 
       // Contact

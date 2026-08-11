@@ -401,7 +401,9 @@ nav{
 section{position:relative;z-index:1;min-height:100vh;padding:100px 2rem 4rem;max-width:1200px;margin:0 auto}
 
 /* HERO */
-#home{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:120px}
+#home{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:120px;position:relative}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#home > *:not(.hero-bg){position:relative;z-index:1}
 #smartClock{font-family:'Orbitron',sans-serif;font-size:clamp(2.5rem,8vw,5rem);font-weight:700;color:var(--gold);letter-spacing:4px}
 .clock-date{font-size:13px;color:var(--text-muted);margin-top:6px;letter-spacing:2px;font-family:'Orbitron',sans-serif}
 .hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.4rem,4vw,2.8rem);font-weight:900;color:var(--text);margin:1.5rem 0 .5rem;line-height:1.2}

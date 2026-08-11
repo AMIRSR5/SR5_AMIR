@@ -685,8 +685,8 @@ footer span{color:var(--gold);font-weight:600}
   <p style="position:absolute;opacity:0;pointer-events:none;font-size:1px;height:0;overflow:hidden">امیرحسین سرافراز برنامه نویس فول استک - امیرحسین سرافراز توسعه دهنده وب - امیرحسین سرافراز ری اکت - امیرحسین سرافراز جاوا اسکریپت - امیرحسین سرافراز PWA - Amirhossein Sarafraz Developer Iran</p>
   <div class="hero-subtitle" id="hero-subtitle">Full-Stack Developer &amp; PWA Specialist</div>
   <div class="hero-btns">
-    <a href="#apps" class="btn-gold">مشاهده پروژه‌ها</a>
-    <a href="#contact" class="btn-outline">تماس با من</a>
+    <a href="#apps" class="btn-gold" onclick="smoothScroll(event,'#apps')">مشاهده پروژه‌ها</a>
+    <a href="#contact" class="btn-outline" onclick="smoothScroll(event,'#contact')">تماس با من</a>
   </div>
 </section>
 
@@ -1091,6 +1091,13 @@ function stopCodeRain() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeMenu();
 });
+
+// ── Smooth scroll for buttons
+function smoothScroll(e, target) {
+  e.preventDefault();
+  const el = document.querySelector(target);
+  if (el) el.scrollIntoView({behavior:'smooth'});
+}
 
 // ── Clock
 function updateClock(){

@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>CYBER GYM</title>
+<meta name="theme-color" content="#05060b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CYBER GYM">
+<meta name="description" content="اپلیکیشن تمرینی هوشمند CYBER GYM">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<style>
+:root{
+  --bg:#05060b; --panel:#0b0e19; --panel2:#0f1424; --line:#26314e;
+  --gold:#f2b93d; --gold-dim:#8a6a22; --teal:#29e8d6; --teal-dim:#136b64;
+  --text:#eef2ff; --muted:#8b96b8; --danger:#ff4d6d; --ok:#3ee08a;
+  --radius:16px; --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Vazirmatn',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+.num{font-family:'Orbitron',sans-serif;}
+a{color:inherit;}
+button{font-family:inherit;}
+input,select,textarea{font-family:inherit;}
+
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(242,185,61,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(41,232,214,.05) 1px,transparent 1px);
+  background-size:38px 38px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 40%,transparent 95%);
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 40%,transparent 95%);}
+.bg-fx::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 15% 10%,rgba(242,185,61,.14),transparent 45%),radial-gradient(circle at 88% 25%,rgba(41,232,214,.14),transparent 45%);}
+
+.hex-card{position:relative;background:
+    linear-gradient(160deg,var(--panel),var(--panel2)),
+    linear-gradient(rgba(242,185,61,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(41,232,214,.04) 1px,transparent 1px);
+  background-size:auto,16px 16px,16px 16px;
+  border:1px solid var(--line);border-radius:4px;
+  clip-path:polygon(0 16px,16px 0,calc(100% - 26px) 0,100% 26px,100% 100%,26px 100%,0 calc(100% - 16px));
+  padding:20px 18px 18px;margin:0 0 16px;}
+.hex-card::before{content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(242,185,61,.10),inset 0 0 24px rgba(41,232,214,.03);}
+/* corner brackets, tech HUD style */
+.hex-card::after{content:"";position:absolute;left:10px;top:10px;width:22px;height:22px;pointer-events:none;
+  border-top:2px solid var(--gold);border-right:2px solid var(--gold);opacity:.65;
+  clip-path:polygon(0 0,100% 0,100% 30%,30% 30%,30% 100%,0 100%);}
+.corner-br{position:absolute;right:10px;bottom:10px;width:22px;height:22px;pointer-events:none;
+  border-bottom:2px solid var(--teal);border-left:2px solid var(--teal);opacity:.65;
+  clip-path:polygon(100% 100%,0 100%,0 70%,70% 70%,70% 0,100% 0);}
+.hex-card{position:relative;}
+.eyebrow{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:3px;color:var(--teal);font-weight:700;margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:"";width:14px;height:1px;background:var(--teal);display:inline-block;}
+.eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);}
+.title{font-size:20px;font-weight:800;margin:0 0 10px;color:var(--gold);}
+.muted{color:var(--muted);font-size:13px;line-height:1.9;}
+
+header.topbar{position:relative;z-index:1;padding:calc(16px + var(--safe-top)) 18px 12px;text-align:center;
+  border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(11,14,25,.92),rgba(11,14,25,.15));}
+.brand{font-family:'Orbitron',sans-serif;font-weight:800;font-size:22px;letter-spacing:4px;
+  background:linear-gradient(90deg,var(--gold),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 18px rgba(242,185,61,.25);}
+.brand-sub{display:block;font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:1px;}
+
+main#view-root{position:relative;z-index:1;padding:16px 16px calc(90px + var(--safe-bottom));max-width:520px;margin:0 auto;}
+.view{display:none;}
+.view.active{display:block;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;background:#0a0d18;border:1px solid var(--line);color:var(--text);
+  border-radius:10px;padding:12px 12px;font-size:14px;outline:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{border:1px solid var(--line);border-radius:20px;padding:7px 14px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none;}
+.chip.on{border-color:var(--teal);color:var(--teal);background:rgba(41,232,214,.08);}
+
+.btn-primary{width:100%;padding:14px;border:none;border-radius:12px;font-weight:800;font-size:14.5px;cursor:pointer;
+  background:linear-gradient(90deg,var(--gold),var(--teal));color:#08090f;letter-spacing:.5px;}
+.btn-ghost{width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);color:var(--muted);margin-top:8px;}
+.btn-danger{background:transparent;border:1px solid var(--danger);color:var(--danger);}
+.link-btn{background:none;border:none;color:var(--teal);font-size:13px;cursor:pointer;text-decoration:underline;}
+
+/* splash */
+#splashScreen{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.splash-logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:30px;letter-spacing:6px;
+  background:linear-gradient(90deg,var(--gold),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.splash-bar{width:140px;height:3px;background:var(--line);border-radius:3px;overflow:hidden;position:relative;}
+.splash-bar::after{content:"";position:absolute;inset:0;width:40%;background:linear-gradient(90deg,var(--gold),var(--teal));animation:load 1.1s infinite;}
+@keyframes load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}
+
+/* auth */
+.auth-wrap{max-width:420px;margin:8vh auto 0;padding:0 20px;position:relative;z-index:1;}
+.auth-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.auth-tab{flex:1;text-align:center;padding:10px;border-radius:10px;border:1px solid var(--line);color:var(--muted);cursor:pointer;font-weight:700;font-size:13px;}
+.auth-tab.on{border-color:var(--gold);color:var(--gold);background:rgba(242,185,61,.08);}
+.auth-msg{font-size:12.5px;color:var(--teal);min-height:18px;margin-top:8px;text-align:center;}
+.auth-msg.err{color:var(--danger);}
+
+/* dashboard */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.stat-box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;}
+.stat-box .v{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:800;color:var(--gold);}
+.stat-box .l{font-size:11px;color:var(--muted);margin-top:4px;}
+.ring-wrap{position:relative;width:76px;height:76px;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:var(--line);stroke-width:7;}
+.ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .6s ease;}
+.ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:800;font-size:15px;color:var(--text);}
+.week-card{display:flex;align-items:center;gap:14px;}
+.week-info b{display:block;font-size:14px;margin-bottom:3px;}
+.week-info span{font-size:12px;color:var(--muted);}
+
+.day-tabs{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 14px;margin:0 -2px;}
+.day-tabs::-webkit-scrollbar{display:none;}
+.day-tab{flex:0 0 auto;min-width:118px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;text-align:center;cursor:pointer;}
+.day-tab b{display:block;font-size:13px;margin-bottom:4px;}
+.day-tab span{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;height:28px;overflow:hidden;}
+.day-tab .cnt{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--teal);}
+.day-tab.active{border-color:var(--gold);box-shadow:0 0 14px rgba(242,185,61,.25);}
+.day-tab.rest{opacity:.6;}
+.check-item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;}
+.check-item.done{border-color:var(--ok);}
+.check-item.done b{text-decoration:line-through;color:var(--muted);}
+.check-item b{font-size:13.5px;display:block;}
+.check-item .sub{font-size:11.5px;color:var(--teal);}
+.check-circle{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;color:transparent;}
+.check-item.done .check-circle{border-color:var(--ok);background:var(--ok);color:#08090f;}
+.ex-item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.ex-item b{font-size:13.5px;}
+.ex-item span{font-size:12px;color:var(--teal);}
+
+.set-row{display:grid;grid-template-columns:34px 1fr 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:8px;}
+.set-row input{width:100%;background:#0a0d18;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 4px;text-align:center;font-size:13px;}
+.set-idx{font-family:'Orbitron',sans-serif;color:var(--gold);text-align:center;font-size:13px;}
+.pr-badge{font-size:10px;background:var(--gold);color:#08090f;padding:2px 6px;border-radius:6px;font-weight:800;}
+
+.badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+.badge{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 6px;text-align:center;opacity:.35;}
+.badge.got{opacity:1;border-color:var(--gold);box-shadow:0 0 14px rgba(242,185,61,.2);}
+.badge .ic{font-size:24px;}
+.badge .t{font-size:10.5px;color:var(--muted);margin-top:4px;}
+
+.toast{position:fixed;bottom:calc(96px + var(--safe-bottom));left:50%;transform:translateX(-50%);
+  background:var(--panel2);border:1px solid var(--gold);color:var(--text);padding:12px 18px;border-radius:12px;font-size:13px;
+  z-index:60;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;text-align:center;max-width:88%;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+.timer-box{text-align:center;padding:20px 0;}
+.timer-num{font-family:'Orbitron',sans-serif;font-size:44px;font-weight:900;color:var(--teal);}
+
+nav.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;
+  background:rgba(11,14,25,.95);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  padding:8px 4px calc(8px + var(--safe-bottom));}
+.nav-btn{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;cursor:pointer;padding:6px 0;}
+.nav-btn svg{width:21px;height:21px;}
+.nav-btn.active{color:var(--gold);}
+.hidden{display:none !important;}
+.row{display:flex;gap:10px;}
+.row>*{flex:1;}
+.center{text-align:center;}
+.admin-link{display:block;text-align:center;font-size:12px;color:var(--teal);margin-top:14px;text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<div id="splashScreen"><span class="splash-logo">CYBER GYM</span><div class="splash-bar"></div></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#f2b93d"/><stop offset="100%" stop-color="#29e8d6"/>
+  </linearGradient></defs>
+</svg>
+<div class="bg-fx"></div>
+
+<!-- ===================== AUTH ===================== -->
+<div id="authScreen" class="hidden">
+  <header class="topbar"><span class="brand">CYBER GYM</span><span class="brand-sub">سیستم هوشمند تمرینی</span></header>
+  <div class="auth-wrap">
+    <div class="auth-tabs">
+      <div class="auth-tab on" data-tab="login">ورود</div>
+      <div class="auth-tab" data-tab="signup">ثبت‌نام</div>
+    </div>
+    <div class="hex-card">
+      <div class="field"><label>ایمیل</label><input type="email" id="authEmail" placeholder="you@example.com"></div>
+      <div class="field"><label>رمز عبور</label><input type="password" id="authPass" placeholder="حداقل ۶ کاراکتر"></div>
+      <button class="btn-primary" id="authSubmitBtn">ورود</button>
+      <div class="auth-msg" id="authMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ONBOARDING ===================== -->
+<div id="onboardScreen" class="hidden">
+  <header class="topbar"><span class="brand">CYBER GYM</span><span class="brand-sub">ساخت پروفایل شخصی</span></header>
+  <main style="position:relative;z-index:1;padding:16px;max-width:520px;margin:0 auto;">
+    <div class="eyebrow">AI PROGRAM BUILDER</div>
+    <h2 class="title">بیا بشناسیمت</h2>
+    <p class="muted">این اطلاعات برای ساخت برنامه‌ی تمرینی شخصی‌سازی‌شده لازمه.</p>
+    <div class="hex-card">
+      <div class="field"><label>نام</label><input type="text" id="obName" placeholder="اسمت چیه؟"></div>
+      <div class="row">
+        <div class="field"><label>سن</label><input type="number" id="obAge" placeholder="۲۵"></div>
+        <div class="field"><label>جنسیت</label><select id="obGender"><option value="male">مرد</option><option value="female">زن</option></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>قد (cm)</label><input type="number" id="obHeight" placeholder="۱۷۵"></div>
+        <div class="field"><label>وزن (kg)</label><input type="number" id="obWeight" placeholder="۷۰"></div>
+      </div>
+      <div class="field"><label>هدف</label>
+        <select id="obGoal">
+          <option value="hypertrophy">عضله‌سازی</option>
+          <option value="fatloss">چربی‌سوزی</option>
+          <option value="strength">افزایش قدرت</option>
+          <option value="general">فیتنس عمومی</option>
+        </select>
+      </div>
+      <div class="field"><label>سطح تمرینی</label>
+        <select id="obLevel"><option value="beginner">مبتدی</option><option value="intermediate" selected>متوسط</option><option value="advanced">حرفه‌ای</option></select>
+      </div>
+      <div class="field"><label>روزهای تمرین در هفته</label>
+        <select id="obDays"><option value="3">۳ روز</option><option value="4">۴ روز</option><option value="5" selected>۵ روز</option><option value="6">۶ روز</option></select>
+      </div>
+      <div class="field"><label>تجهیزات موجود</label>
+        <div class="chip-row" id="obEquip">
+          <span class="chip on" data-v="bodyweight">وزن بدن</span>
+          <span class="chip" data-v="dumbbell">دمبل</span>
+          <span class="chip" data-v="barbell">هالتر</span>
+          <span class="chip" data-v="machine">دستگاه</span>
+          <span class="chip" data-v="band">کش</span>
+        </div>
+      </div>
+      <button class="btn-primary" id="obSubmitBtn">ساخت پروفایل ⚡</button>
+      <div class="auth-msg" id="obMsg"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appScreen" class="hidden">
+<header class="topbar"><span class="brand">CYBER GYM</span><span class="brand-sub" id="topbarSub">خوش اومدی</span></header>
+<main id="view-root">
+
+  <!-- DASHBOARD -->
+  <section class="view active" id="view-dashboard">
+    <div class="hex-card week-card">
+      <div class="ring-wrap"><svg viewBox="0 0 80 80" width="76" height="76">
+        <circle class="ring-track" cx="40" cy="40" r="34"></circle>
+        <circle class="ring-fill" id="weekRing" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"></circle>
+      </svg><div class="ring-label num" id="weekPct">۰٪</div></div>
+      <div class="week-info"><b>پیشرفت این هفته</b><span id="weekCount">۰ از ۰ تمرین</span></div>
+    </div>
+
+    <div class="stat-grid" style="margin-bottom:16px;">
+      <div class="stat-box"><div class="v num" id="dashXP">0</div><div class="l">XP</div></div>
+      <div class="stat-box"><div class="v num" id="dashLevel">1</div><div class="l">Level</div></div>
+      <div class="stat-box"><div class="v num" id="dashStreak">0</div><div class="l">Streak روز</div></div>
+      <div class="stat-box"><div class="v num" id="dashWeight">--</div><div class="l">وزن فعلی (kg)</div></div>
+    </div>
+
+    <div class="hex-card">
+      <div class="eyebrow">TODAY</div>
+      <div class="title" style="margin-bottom:6px;">تمرین امروز</div>
+      <div id="dashTodayFocus" class="muted">در حال بارگذاری...</div>
+    </div>
+
+    <div class="hex-card">
+      <div class="eyebrow">LAST RECORD</div>
+      <div class="title" style="margin-bottom:6px;">آخرین رکورد</div>
+      <div id="dashLastPR" class="muted">هنوز رکوردی ثبت نشده</div>
+    </div>
+  </section>
+
+  <!-- WORKOUT -->
+  <section class="view" id="view-workout">
+    <div id="builderWrap">
+      <div class="eyebrow">AI PROGRAM BUILDER</div>
+      <h2 class="title">برنامه‌ساز هوشمند</h2>
+      <p class="muted">با اطلاعات پروفایلت یه برنامه هفتگی می‌سازم. هر وقت خواستی می‌تونی دوباره بسازیش.</p>
+      <button class="btn-primary" id="generatePlanBtn">⚡ تولید برنامه هوشمند</button>
+    </div>
+    <div id="programWrap" class="hidden">
+      <div class="hex-card week-card" style="margin-bottom:14px;">
+        <div class="ring-wrap"><svg viewBox="0 0 80 80" width="76" height="76">
+          <circle class="ring-track" cx="40" cy="40" r="34"></circle>
+          <circle class="ring-fill" id="planWeekRing" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"></circle>
+        </svg><div class="ring-label num" id="planWeekPct">۰٪</div></div>
+        <div class="week-info"><b>پیشرفت این هفته</b><span id="planWeekCount">۰ از ۰ تمرین انجام شده</span></div>
+      </div>
+      <div class="day-tabs" id="dayTabs"></div>
+      <div class="hex-card">
+        <div class="eyebrow" id="todayEyebrow">DAY</div>
+        <div class="title" id="todayFocusTitle" style="margin-bottom:10px;"></div>
+        <div id="todayExList"></div>
+        <button class="btn-primary" id="startSessionBtn" style="margin-top:10px;">🏋️ شروع تمرین (ثبت ست و وزن)</button>
+        <div class="corner-br"></div>
+      </div>
+      <button class="btn-ghost" id="regenPlanBtn">ساخت برنامه جدید</button>
+    </div>
+
+    <!-- session mode -->
+    <div id="sessionWrap" class="hidden">
+      <div class="hex-card">
+        <div class="eyebrow">SESSION</div>
+        <div class="title" id="sessExName"></div>
+        <div id="sessSetRows"></div>
+        <button class="btn-ghost" id="addSetBtn">+ افزودن ست</button>
+      </div>
+      <div class="row">
+        <button class="btn-ghost" id="prevExBtn">حرکت قبلی</button>
+        <button class="btn-primary" id="nextExBtn">حرکت بعدی</button>
+      </div>
+      <div class="hex-card hidden" id="restTimerCard">
+        <div class="eyebrow center">REST</div>
+        <div class="timer-box"><div class="timer-num num" id="restTimerNum">۶۰</div></div>
+      </div>
+      <button class="btn-danger btn-ghost" id="finishSessionBtn" style="margin-top:14px;">✅ پایان تمرین و ثبت خلاصه</button>
+    </div>
+
+    <!-- summary -->
+    <div id="summaryWrap" class="hidden">
+      <div class="hex-card center">
+        <div class="eyebrow">SUMMARY</div>
+        <h2 class="title">تمرین ثبت شد! 🎉</h2>
+        <div id="summaryBody" class="muted"></div>
+      </div>
+      <button class="btn-primary" id="backToDashBtn">برگشت به داشبورد</button>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="view" id="view-progress">
+    <div class="eyebrow">BODY PROGRESS</div>
+    <h2 class="title">پیشرفت بدنی</h2>
+    <div class="hex-card">
+      <div class="row"><div class="field"><label>وزن (kg)</label><input type="number" id="bpWeight"></div>
+      <div class="field"><label>دور شکم (cm)</label><input type="number" id="bpWaist"></div></div>
+      <div class="row"><div class="field"><label>دور سینه (cm)</label><input type="number" id="bpChest"></div>
+      <div class="field"><label>دور بازو (cm)</label><input type="number" id="bpArm"></div></div>
+      <div class="field"><label>دور ران (cm)</label><input type="number" id="bpThigh"></div>
+      <button class="btn-primary" id="addBodyLogBtn">ثبت اندازه‌گیری</button>
+    </div>
+    <div id="bodyCompareCard" class="hex-card hidden">
+      <div class="eyebrow">COMPARE</div>
+      <div class="title" style="margin-bottom:8px;">اولین ثبت تا امروز</div>
+      <div id="bodyCompareBody" class="muted"></div>
+    </div>
+    <div id="bodyLogList"></div>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="view" id="view-profile">
+    <div class="eyebrow">PROFILE</div>
+    <h2 class="title" id="profName">--</h2>
+    <div class="stat-grid" style="margin-bottom:16px;">
+      <div class="stat-box"><div class="v num" id="profXP">0</div><div class="l">XP</div></div>
+      <div class="stat-box"><div class="v num" id="profLevel">1</div><div class="l">Level</div></div>
+      <div class="stat-box"><div class="v num" id="profStreakBest">0</div><div class="l">بهترین Streak</div></div>
+      <div class="stat-box"><div class="v num" id="profTotal">0</div><div class="l">کل تمرین‌ها</div></div>
+    </div>
+    <div class="hex-card">
+      <div class="eyebrow">ACHIEVEMENTS</div>
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+    <div class="hex-card">
+      <div class="eyebrow">PREMIUM</div>
+      <div class="title" style="font-size:15px;">🔒 امکانات پرمیوم</div>
+      <p class="muted">برنامه‌های پیشرفته، برنامه غذایی، AI Coach و تحلیل حرفه‌ای پیشرفت — به‌زودی.</p>
+    </div>
+    <a class="admin-link hidden" id="adminLink" href="admin.html">🛠 ورود به پنل ادمین</a>
+    <button class="btn-ghost btn-danger" id="logoutBtn" style="margin-top:14px;">خروج از حساب</button>
+  </section>
+
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span>داشبورد</span></button>
+  <button class="nav-btn" data-view="workout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/></svg><span>تمرین</span></button>
+  <button class="nav-btn" data-view="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m21 15-4-4-9 9"/></svg><span>پیشرفت</span></button>
+  <button class="nav-btn" data-view="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg><span>پروفایل</span></button>
+</nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =========================================================
+// SUPABASE INIT
+// =========================================================
+var cfg = window.CYBER_GYM_CONFIG || {};
+var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+
+var CURRENT_USER = null;
+var CURRENT_PROFILE = null;
+var CURRENT_PROGRAM = null;
+var CURRENT_SESSION = null; // {id, exercises:[{n,s,sets:[{reps,weight}]}], idx}
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+function show(el){ el.classList.remove('hidden'); }
+function hide(el){ el.classList.add('hidden'); }
+function $(id){ return document.getElementById(id); }
+
+// =========================================================
+// BOOT
+// =========================================================
+window.addEventListener('DOMContentLoaded', boot);
+async function boot(){
+  if(!cfg.SUPABASE_URL || cfg.SUPABASE_URL.indexOf('YOUR-PROJECT') !== -1){
+    document.getElementById('splashScreen').innerHTML =
+      '<span class="splash-logo" style="font-size:18px;letter-spacing:1px;text-align:center;padding:0 24px;">'+
+      'برای فعال‌سازی اپ، فایل config.js رو با اطلاعات Supabase پروژه‌ت پر کن.</span>';
+    return;
+  }
+  var { data:{ session } } = await sb.auth.getSession();
+  setTimeout(async function(){
+    document.getElementById('splashScreen').style.display='none';
+    if(session){ CURRENT_USER = session.user; await afterLogin(); }
+    else{ show($('authScreen')); }
+  }, 500);
+
+  sb.auth.onAuthStateChange(function(event, sess){
+    if(event === 'SIGNED_OUT'){
+      CURRENT_USER = null; CURRENT_PROFILE = null;
+      hide($('appScreen')); hide($('onboardScreen')); show($('authScreen'));
+    }
+  });
+}
+
+async function afterLogin(){
+  var { data: profile } = await sb.from('profiles').select('*').eq('id', CURRENT_USER.id).maybeSingle();
+  hide($('authScreen'));
+  if(!profile || !profile.full_name){
+    CURRENT_PROFILE = profile;
+    show($('onboardScreen'));
+  } else {
+    CURRENT_PROFILE = profile;
+    show($('appScreen'));
+    await initApp();
+  }
+}
+
+// =========================================================
+// AUTH SCREEN
+// =========================================================
+var authMode = 'login';
+document.querySelectorAll('.auth-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('on');});
+    tab.classList.add('on');
+    authMode = tab.dataset.tab;
+    $('authSubmitBtn').textContent = authMode === 'login' ? 'ورود' : 'ثبت‌نام';
+    $('authMsg').textContent='';
+  });
+});
+$('authSubmitBtn').addEventListener('click', async function(){
+  var email = $('authEmail').value.trim();
+  var pass = $('authPass').value;
+  var msg = $('authMsg'); msg.className='auth-msg'; msg.textContent='در حال پردازش...';
+  if(!email || !pass || pass.length < 6){
+    msg.textContent = 'ایمیل معتبر و رمز حداقل ۶ کاراکتری وارد کن.'; msg.className='auth-msg err'; return;
+  }
+  if(authMode === 'signup'){
+    var { data, error } = await sb.auth.signUp({ email:email, password:pass });
+    if(error){ msg.textContent = error.message; msg.className='auth-msg err'; return; }
+    if(data.session){
+      CURRENT_USER = data.user; msg.textContent=''; await afterLogin();
+    } else {
+      msg.textContent = 'ثبت‌نام انجام شد! لینک تایید برات ایمیل شد، بعد از تایید وارد شو.';
+    }
+  } else {
+    var { data, error } = await sb.auth.signInWithPassword({ email:email, password:pass });
+    if(error){ msg.textContent = error.message; msg.className='auth-msg err'; return; }
+    CURRENT_USER = data.user; msg.textContent=''; await afterLogin();
+  }
+});
+
+// =========================================================
+// ONBOARDING
+// =========================================================
+document.querySelectorAll('#obEquip .chip').forEach(function(c){
+  c.addEventListener('click', function(){ c.classList.toggle('on'); });
+});
+$('obSubmitBtn').addEventListener('click', async function(){
+  var msg = $('obMsg'); msg.className='auth-msg';
+  var name = $('obName').value.trim();
+  if(!name){ msg.textContent='نامت رو وارد کن.'; msg.className='auth-msg err'; return; }
+  var equip = Array.from(document.querySelectorAll('#obEquip .chip.on')).map(function(c){ return c.dataset.v; });
+  var payload = {
+    id: CURRENT_USER.id,
+    full_name: name,
+    age: parseInt($('obAge').value) || null,
+    height_cm: parseFloat($('obHeight').value) || null,
+    weight_kg: parseFloat($('obWeight').value) || null,
+    gender: $('obGender').value,
+    goal: $('obGoal').value,
+    level: $('obLevel').value,
+    days_per_week: parseInt($('obDays').value),
+    equipment: equip
+  };
+  msg.textContent='در حال ساخت پروفایل...';
+  var { data, error } = await sb.from('profiles').upsert(payload).select().maybeSingle();
+  if(error){ msg.textContent = error.message; msg.className='auth-msg err'; return; }
+  CURRENT_PROFILE = data;
+  hide($('onboardScreen')); show($('appScreen'));
+  await initApp();
+});
+
+// =========================================================
+// APP INIT + NAV
+// =========================================================
+document.querySelectorAll('.nav-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+    btn.classList.add('active');
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    if(btn.dataset.view === 'progress') renderBodyProgress();
+    if(btn.dataset.view === 'profile') renderProfile();
+    if(btn.dataset.view === 'workout') renderWorkoutTab();
+  });
+});
+
+async function initApp(){
+  $('topbarSub').textContent = 'خوش اومدی ' + (CURRENT_PROFILE.full_name || '');
+  if(CURRENT_PROFILE.is_admin) show($('adminLink'));
+  await loadActiveProgram();
+  await renderDashboard();
+}
+
+async function loadActiveProgram(){
+  var { data } = await sb.from('workout_programs').select('*').eq('user_id', CURRENT_USER.id).eq('is_active', true).order('created_at', {ascending:false}).limit(1).maybeSingle();
+  CURRENT_PROGRAM = data || null;
+}
+
+// =========================================================
+// WEEK DAY MAPPING (شنبه..جمعه => index0..6, JS getDay: 0=Sun..6=Sat)
+// =========================================================
+var WEEK_DAYS = [
+  {id:'sat', day:'شنبه'}, {id:'sun', day:'یکشنبه'}, {id:'mon', day:'دوشنبه'},
+  {id:'tue', day:'سه‌شنبه'}, {id:'wed', day:'چهارشنبه'}, {id:'thu', day:'پنجشنبه'}, {id:'fri', day:'جمعه'}
+];
+function todayIndex(){
+  var jsDay = new Date().getDay(); // 0=Sun
+  var map = {6:0, 0:1, 1:2, 2:3, 3:4, 4:5, 5:6}; // sat..fri
+  return map[jsDay];
+}
+function todayEntry(program){
+  if(!program) return null;
+  var idx = todayIndex();
+  return program.days[idx] || null;
+}
+
+// =========================================================
+// DASHBOARD
+// =========================================================
+async function renderDashboard(){
+  var p = CURRENT_PROFILE;
+  $('dashXP').textContent = p.xp || 0;
+  $('dashLevel').textContent = p.level_num || 1;
+  $('dashStreak').textContent = p.streak_current || 0;
+  $('dashWeight').textContent = p.weight_kg || '--';
+
+  var t = todayEntry(CURRENT_PROGRAM);
+  if(!CURRENT_PROGRAM){
+    $('dashTodayFocus').innerHTML = 'هنوز برنامه‌ای نداری. برو تب «تمرین» و بسازش ⚡';
+  } else if(t){
+    var list = t.exercises.map(function(e){ return e.n + ' — ' + e.s; }).join('<br>');
+    $('dashTodayFocus').innerHTML = '<b style="color:var(--text)">' + t.focus + '</b><br><br>' + list;
+  }
+
+  var { count } = await sb.from('workout_sessions').select('id', {count:'exact', head:true})
+    .eq('user_id', CURRENT_USER.id).gte('started_at', startOfWeekISO());
+  var target = p.days_per_week || 3;
+  var done = count || 0;
+  var pct = Math.min(100, Math.round((done/target)*100));
+  var ring = $('weekRing'), circumference = 213.6;
+  ring.style.strokeDashoffset = circumference - (circumference*pct/100);
+  $('weekPct').textContent = pct + '٪';
+  $('weekCount').textContent = done + ' از ' + target + ' تمرین';
+
+  var { data: lastPr } = await sb.from('personal_records').select('*').eq('user_id', CURRENT_USER.id).order('achieved_at', {ascending:false}).limit(1).maybeSingle();
+  if(lastPr){
+    $('dashLastPR').innerHTML = '<b style="color:var(--gold)">' + lastPr.exercise_name + '</b><br>' + lastPr.best_weight + ' kg × ' + lastPr.best_reps + ' تکرار';
+  }
+}
+function startOfWeekISO(){
+  var d = new Date();
+  var idx = todayIndex();
+  d.setDate(d.getDate() - idx);
+  d.setHours(0,0,0,0);
+  return d.toISOString();
+}
+
+// =========================================================
+// WORKOUT BUILDER (rule-based generator)
+// =========================================================
+var SPLIT_TEMPLATES = {
+  3: [{focus:'فول‌بادی A', ex:['اسکات با هالتر','پرس سینه','زیربغل قایقی','پرس سرشانه','پلانک']},
+      {focus:'فول‌بادی B', ex:['ددلیفت','شنا سوئدی','لت پول‌داون','لانج','کرانچ']},
+      {focus:'فول‌بادی C', ex:['هیپ تراست','پرس سینه شیب‌دار','رو با دمبل','جلو بازو','ساق پا']}],
+  4: [{focus:'بالاتنه فشاری', ex:['پرس سینه','پرس سرشانه','دیپ','پشت بازو سیم‌کش']},
+      {focus:'پایین‌تنه', ex:['اسکات','ددلیفت رومانیایی','لانج','ساق پا']},
+      {focus:'بالاتنه کششی', ex:['بارفیکس/لت','زیربغل قایقی','جلو بازو','فیس پول']},
+      {focus:'فول‌بادی + کور', ex:['اسکات جامپ','شنا سوئدی','پلانک','کرانچ کابل']}],
+  5: [{focus:'سینه و پشت‌بازو', ex:['پرس سینه','پرس بالاسینه','قفسه سینه','پشت بازو سیم‌کش','دیپ']},
+      {focus:'پشت و جلوبازو', ex:['بارفیکس/لت','زیربغل قایقی','رو با دمبل','جلو بازو هالتر','جلو بازو چکشی']},
+      {focus:'پا', ex:['اسکات','ددلیفت رومانیایی','لانج','جلو پا','پشت پا','ساق پا']},
+      {focus:'سرشانه و شکم', ex:['پرس سرشانه','نشر جانب','نشر خم','کرانچ','پلانک']},
+      {focus:'فول‌بادی سبک', ex:['اسکات جامپ','شنا سوئدی','کول‌آپ','کتل‌بل سوئینگ']}],
+  6: [{focus:'سینه', ex:['پرس سینه','پرس بالاسینه','قفسه سینه','دیپ']},
+      {focus:'پشت', ex:['بارفیکس/لت','زیربغل قایقی','رو با دمبل','فیس پول']},
+      {focus:'پا', ex:['اسکات','ددلیفت رومانیایی','لانج','ساق پا']},
+      {focus:'سرشانه', ex:['پرس سرشانه','نشر جانب','نشر خم','شراگ']},
+      {focus:'بازو', ex:['جلو بازو هالتر','پشت بازو سیم‌کش','جلو بازو چکشی','دیپ']},
+      {focus:'شکم و کور', ex:['کرانچ','پلانک','بالا آوردن پا','چرخش روسی']}]
+};
+var DAY_PATTERNS = {
+  3: [1,0,1,0,1,0,0], 4: [1,0,1,1,0,1,0], 5: [1,1,0,1,1,0,1], 6: [1,1,1,0,1,1,1]
+};
+var LEVEL_COUNT = {beginner:4, intermediate:5, advanced:6};
+var GOAL_SCHEME = {
+  hypertrophy:{cSets:4,cReps:'8-10',iSets:3,iReps:'10-12'},
+  fatloss:{cSets:3,cReps:'12-15',iSets:3,iReps:'15'},
+  strength:{cSets:5,cReps:'3-5',iSets:3,iReps:'6-8'},
+  general:{cSets:3,cReps:'10',iSets:3,iReps:'12'}
+};
+function generatePersonalPlan(profile){
+  var pattern = DAY_PATTERNS[profile.days_per_week] || DAY_PATTERNS[5];
+  var split = SPLIT_TEMPLATES[profile.days_per_week] || SPLIT_TEMPLATES[5];
+  var count = LEVEL_COUNT[profile.level] || 5;
+  var scheme = GOAL_SCHEME[profile.goal] || GOAL_SCHEME.general;
+  var splitIdx = 0, plan = [];
+  pattern.forEach(function(isDay, i){
+    var slot = WEEK_DAYS[i];
+    if(isDay){
+      var tmpl = split[splitIdx % split.length]; splitIdx++;
+      var list = tmpl.ex.slice(0, Math.min(count, tmpl.ex.length));
+      var exercises = list.map(function(name, idx){
+        var isCompound = idx < 2;
+        var sets = isCompound ? scheme.cSets : scheme.iSets;
+        var reps = isCompound ? scheme.cReps : scheme.iReps;
+        return { n:name, s: sets + '×' + reps, sets: sets };
+      });
+      if(profile.goal === 'fatloss') exercises.push({n:'هوازی پایان تمرین', s:'۱۵-۲۰ دقیقه', sets:0});
+      plan.push({ id:slot.id, day:slot.day, focus:tmpl.focus, exercises:exercises });
+    } else {
+      plan.push({ id:slot.id, day:slot.day, focus:'ریکاوری / استراحت فعال',
+        exercises:[{n:'کشش کل بدن', s:'۱۰-۱۵ دقیقه', sets:0}] });
+    }
+  });
+  return plan;
+}
+
+$('generatePlanBtn').addEventListener('click', async function(){
+  var plan = generatePersonalPlan(CURRENT_PROFILE);
+  var { data, error } = await sb.from('workout_programs').insert({
+    user_id: CURRENT_USER.id, days: plan, goal: CURRENT_PROFILE.goal, level: CURRENT_PROFILE.level, is_active:true
+  }).select().maybeSingle();
+  if(error){ toast('خطا: ' + error.message); return; }
+  await sb.from('workout_programs').update({is_active:false}).eq('user_id', CURRENT_USER.id).neq('id', data.id);
+  CURRENT_PROGRAM = data;
+  toast('برنامه‌ت ساخته شد! 💪');
+  renderWorkoutTab(); renderDashboard();
+});
+$('regenPlanBtn').addEventListener('click', function(){ $('generatePlanBtn').click(); });
+
+var SELECTED_DAY_IDX = todayIndex();
+
+function checklistKey(dayId, idx){ return dayId + '-' + idx; }
+function getChecklist(){ return (CURRENT_PROGRAM && CURRENT_PROGRAM.checklist) || {}; }
+
+function renderWorkoutTab(){
+  hide($('sessionWrap')); hide($('summaryWrap'));
+  if(!CURRENT_PROGRAM){ show($('builderWrap')); hide($('programWrap')); return; }
+  hide($('builderWrap')); show($('programWrap'));
+  SELECTED_DAY_IDX = todayIndex();
+  renderDayTabs();
+  renderSelectedDay();
+}
+
+function renderDayTabs(){
+  var checklist = getChecklist();
+  $('dayTabs').innerHTML = CURRENT_PROGRAM.days.map(function(d, i){
+    var total = d.exercises.length;
+    var done = d.exercises.filter(function(e, idx){ return checklist[checklistKey(d.id, idx)]; }).length;
+    var isRest = d.exercises.every(function(e){ return e.sets === 0; });
+    return '<div class="day-tab ' + (i===SELECTED_DAY_IDX?'active':'') + ' ' + (isRest?'rest':'') + '" data-i="' + i + '">' +
+      '<b>' + d.day + '</b><span>' + d.focus + '</span><div class="cnt num">' + done + '/' + total + '</div>' +
+    '</div>';
+  }).join('');
+  Array.from($('dayTabs').querySelectorAll('.day-tab')).forEach(function(tab){
+    tab.addEventListener('click', function(){
+      SELECTED_DAY_IDX = parseInt(tab.dataset.i);
+      renderDayTabs(); renderSelectedDay();
+    });
+  });
+
+  var totalAll=0, doneAll=0;
+  CURRENT_PROGRAM.days.forEach(function(d){
+    d.exercises.forEach(function(e, idx){ totalAll++; if(checklist[checklistKey(d.id, idx)]) doneAll++; });
+  });
+  var pct = totalAll ? Math.round((doneAll/totalAll)*100) : 0;
+  var circumference = 213.6;
+  $('planWeekRing').style.strokeDashoffset = circumference - (circumference*pct/100);
+  $('planWeekPct').textContent = pct + '٪';
+  $('planWeekCount').textContent = doneAll + ' از ' + totalAll + ' تمرین انجام شده';
+}
+
+function renderSelectedDay(){
+  var d = CURRENT_PROGRAM.days[SELECTED_DAY_IDX];
+  var checklist = getChecklist();
+  $('todayEyebrow').textContent = SELECTED_DAY_IDX === todayIndex() ? 'TODAY' : 'DAY';
+  $('todayFocusTitle').textContent = d.focus + ' — ' + d.day;
+  $('todayExList').innerHTML = d.exercises.map(function(e, idx){
+    var key = checklistKey(d.id, idx);
+    var done = !!checklist[key];
+    return '<div class="check-item ' + (done?'done':'') + '" data-idx="' + idx + '">' +
+      '<div><b>' + e.n + '</b><div class="sub">' + e.s + '</div></div>' +
+      '<div class="check-circle">✓</div>' +
+    '</div>';
+  }).join('');
+  Array.from($('todayExList').querySelectorAll('.check-item')).forEach(function(item){
+    item.addEventListener('click', async function(){
+      var idx = parseInt(item.dataset.idx);
+      var key = checklistKey(d.id, idx);
+      var checklist2 = getChecklist();
+      checklist2[key] = !checklist2[key];
+      CURRENT_PROGRAM.checklist = checklist2;
+      renderDayTabs(); renderSelectedDay();
+      await sb.from('workout_programs').update({checklist: checklist2}).eq('id', CURRENT_PROGRAM.id);
+      renderDashboard();
+    });
+  });
+}
+
+// =========================================================
+// SESSION MODE (شروع تمرین)
+// =========================================================
+$('startSessionBtn').addEventListener('click', async function(){
+  var t = CURRENT_PROGRAM.days[SELECTED_DAY_IDX];
+  var realExercises = t.exercises.filter(function(e){ return e.sets > 0; });
+  if(realExercises.length === 0){ toast('این روز ریکاوریه، تمرین سنگین نداره 🙂'); return; }
+  var { data: sess } = await sb.from('workout_sessions').insert({
+    user_id: CURRENT_USER.id, program_day: t.focus
+  }).select().maybeSingle();
+  CURRENT_SESSION = { id: sess.id, exercises: realExercises.map(function(e){
+    return { n:e.n, targetSets:e.sets, sets:[] };
+  }), idx: 0 };
+  hide($('programWrap')); show($('sessionWrap'));
+  renderCurrentExercise();
+});
+
+function renderCurrentExercise(){
+  var ex = CURRENT_SESSION.exercises[CURRENT_SESSION.idx];
+  $('sessExName').textContent = (CURRENT_SESSION.idx+1) + '/' + CURRENT_SESSION.exercises.length + ' — ' + ex.n;
+  renderSetRows();
+  $('prevExBtn').disabled = CURRENT_SESSION.idx === 0;
+  $('nextExBtn').textContent = (CURRENT_SESSION.idx === CURRENT_SESSION.exercises.length-1) ? 'اتمام حرکات' : 'حرکت بعدی';
+}
+function renderSetRows(){
+  var ex = CURRENT_SESSION.exercises[CURRENT_SESSION.idx];
+  if(ex.sets.length === 0){
+    for(var i=0;i<ex.targetSets;i++) ex.sets.push({reps:'', weight:''});
+  }
+  $('sessSetRows').innerHTML = ex.sets.map(function(s, i){
+    return '<div class="set-row">' +
+      '<div class="set-idx">'+(i+1)+'</div>' +
+      '<input type="number" placeholder="تکرار" value="'+s.reps+'" data-si="'+i+'" data-f="reps">' +
+      '<input type="number" placeholder="وزن kg" value="'+s.weight+'" data-si="'+i+'" data-f="weight">' +
+      '<input type="number" placeholder="استراحت ثانیه" value="'+(s.rest||90)+'" data-si="'+i+'" data-f="rest">' +
+      '<button class="btn-ghost" style="width:auto;padding:8px;margin:0;" data-rest="'+i+'">⏱</button>' +
+    '</div>';
+  }).join('');
+  Array.from($('sessSetRows').querySelectorAll('input')).forEach(function(inp){
+    inp.addEventListener('input', function(){
+      var si = parseInt(inp.dataset.si), f = inp.dataset.f;
+      ex.sets[si][f] = inp.value;
+    });
+  });
+  Array.from($('sessSetRows').querySelectorAll('[data-rest]')).forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var si = parseInt(btn.dataset.rest);
+      startRestTimer(parseInt(ex.sets[si].rest) || 60);
+    });
+  });
+}
+$('addSetBtn').addEventListener('click', function(){
+  CURRENT_SESSION.exercises[CURRENT_SESSION.idx].sets.push({reps:'', weight:'', rest:90});
+  renderSetRows();
+});
+$('prevExBtn').addEventListener('click', function(){
+  if(CURRENT_SESSION.idx > 0){ CURRENT_SESSION.idx--; renderCurrentExercise(); }
+});
+$('nextExBtn').addEventListener('click', function(){
+  if(CURRENT_SESSION.idx < CURRENT_SESSION.exercises.length-1){ CURRENT_SESSION.idx++; renderCurrentExercise(); }
+  else toast('حرکات تموم شد، حالا «پایان تمرین» رو بزن ✅');
+});
+
+var restInterval = null;
+function startRestTimer(seconds){
+  clearInterval(restInterval);
+  show($('restTimerCard'));
+  var remain = seconds;
+  $('restTimerNum').textContent = remain;
+  restInterval = setInterval(function(){
+    remain--;
+    $('restTimerNum').textContent = Math.max(remain,0);
+    if(remain <= 0){ clearInterval(restInterval); hide($('restTimerCard')); toast('استراحت تموم شد! برو ست بعدی 🔥'); }
+  }, 1000);
+}
+
+// =========================================================
+// FINISH SESSION -> save sets, XP, streak, PR, achievements
+// =========================================================
+$('finishSessionBtn').addEventListener('click', async function(){
+  clearInterval(restInterval);
+  var setsToInsert = [];
+  CURRENT_SESSION.exercises.forEach(function(ex){
+    ex.sets.forEach(function(s, i){
+      if(s.reps && s.weight){
+        setsToInsert.push({
+          session_id: CURRENT_SESSION.id, user_id: CURRENT_USER.id,
+          exercise_name: ex.n, set_index: i+1,
+          reps: parseInt(s.reps), weight_kg: parseFloat(s.weight), rest_sec: parseInt(s.rest)||90
+        });
+      }
+    });
+  });
+  if(setsToInsert.length === 0){ toast('حداقل یه ست با تکرار و وزن ثبت کن.'); return; }
+
+  var { data: insertedSets } = await sb.from('workout_sets').insert(setsToInsert).select();
+
+  // PR check per exercise (based on max weight*reps volume, and max weight)
+  var byExercise = {};
+  insertedSets.forEach(function(s){
+    if(!byExercise[s.exercise_name]) byExercise[s.exercise_name] = [];
+    byExercise[s.exercise_name].push(s);
+  });
+  var prList = [], prXP = 0;
+  for(var name in byExercise){
+    var sets = byExercise[name];
+    var best = sets.reduce(function(a,b){ return (a.weight_kg*a.reps > b.weight_kg*b.reps) ? a : b; });
+    var { data: existing } = await sb.from('personal_records').select('*').eq('user_id', CURRENT_USER.id).eq('exercise_name', name).maybeSingle();
+    var newVolume = best.weight_kg * best.reps;
+    if(!existing || newVolume > existing.best_volume){
+      await sb.from('personal_records').upsert({
+        user_id: CURRENT_USER.id, exercise_name: name,
+        best_weight: best.weight_kg, best_reps: best.reps, best_volume: newVolume, achieved_at: new Date().toISOString()
+      }, { onConflict:'user_id,exercise_name' });
+      prList.push(name); prXP += 75;
+      await sb.from('workout_sets').update({is_pr:true}).eq('id', best.id);
+    }
+  }
+
+  // streak calc
+  var today = new Date(); today.setHours(0,0,0,0);
+  var last = CURRENT_PROFILE.last_workout_date ? new Date(CURRENT_PROFILE.last_workout_date) : null;
+  var newStreak = CURRENT_PROFILE.streak_current || 0;
+  if(!last){ newStreak = 1; }
+  else{
+    var diffDays = Math.round((today - last)/86400000);
+    if(diffDays === 0) newStreak = CURRENT_PROFILE.streak_current || 1;
+    else if(diffDays === 1) newStreak = (CURRENT_PROFILE.streak_current||0) + 1;
+    else newStreak = 1;
+  }
+  var bestStreak = Math.max(newStreak, CURRENT_PROFILE.streak_best || 0);
+
+  var sessionXP = 50 + setsToInsert.length*5 + prXP;
+  var newXP = (CURRENT_PROFILE.xp || 0) + sessionXP;
+  var newLevelNum = Math.floor(newXP/500) + 1;
+  var newTotal = (CURRENT_PROFILE.total_workouts || 0) + 1;
+
+  await sb.from('workout_sessions').update({
+    ended_at: new Date().toISOString(), xp_earned: sessionXP, note: ''
+  }).eq('id', CURRENT_SESSION.id);
+
+  await sb.from('xp_log').insert({ user_id: CURRENT_USER.id, amount: sessionXP, reason:'workout' });
+
+  var { data: updatedProfile } = await sb.from('profiles').update({
+    xp:newXP, level_num:newLevelNum, streak_current:newStreak, streak_best:bestStreak,
+    last_workout_date: today.toISOString().slice(0,10), total_workouts:newTotal
+  }).eq('id', CURRENT_USER.id).select().maybeSingle();
+  CURRENT_PROFILE = updatedProfile;
+
+  // achievements
+  var unlocked = [];
+  if(newTotal === 1) unlocked.push('first_workout');
+  if(newTotal === 10) unlocked.push('workouts_10');
+  if(prList.length > 0) unlocked.push('first_pr');
+  if(newStreak === 7) unlocked.push('streak_7');
+  if(newStreak === 30) unlocked.push('streak_30');
+  if(newXP >= 1000 && (CURRENT_PROFILE.xp - sessionXP) < 1000) unlocked.push('xp_1000');
+  for(var i=0;i<unlocked.length;i++){
+    await sb.from('user_achievements').upsert({ user_id: CURRENT_USER.id, achievement_code: unlocked[i] }, { onConflict:'user_id,achievement_code' });
+  }
+
+  var summary = 'حرکات: ' + CURRENT_SESSION.exercises.length + ' — ست‌های ثبت‌شده: ' + setsToInsert.length + '<br>' +
+    'XP گرفته‌شده: <b style="color:var(--gold)">+' + sessionXP + '</b><br>' +
+    'Streak فعلی: <b style="color:var(--teal)">' + newStreak + ' روز</b>' +
+    (prList.length ? '<br><br>🏆 رکورد جدید در: ' + prList.join('، ') : '');
+  $('summaryBody').innerHTML = summary;
+  hide($('sessionWrap')); show($('summaryWrap'));
+  CURRENT_SESSION = null;
+  renderDashboard();
+});
+$('backToDashBtn').addEventListener('click', function(){
+  hide($('summaryWrap'));
+  document.querySelector('.nav-btn[data-view="dashboard"]').click();
+});
+
+// =========================================================
+// BODY PROGRESS
+// =========================================================
+$('addBodyLogBtn').addEventListener('click', async function(){
+  var payload = {
+    user_id: CURRENT_USER.id,
+    weight_kg: parseFloat($('bpWeight').value) || null,
+    waist_cm: parseFloat($('bpWaist').value) || null,
+    chest_cm: parseFloat($('bpChest').value) || null,
+    arm_cm: parseFloat($('bpArm').value) || null,
+    thigh_cm: parseFloat($('bpThigh').value) || null
+  };
+  var { error } = await sb.from('body_progress').insert(payload);
+  if(error){ toast('خطا: ' + error.message); return; }
+  if(payload.weight_kg){
+    await sb.from('profiles').update({weight_kg: payload.weight_kg}).eq('id', CURRENT_USER.id);
+    CURRENT_PROFILE.weight_kg = payload.weight_kg;
+  }
+  toast('اندازه‌گیری ثبت شد ✅');
+  ['bpWeight','bpWaist','bpChest','bpArm','bpThigh'].forEach(function(id){ $(id).value=''; });
+  renderBodyProgress(); renderDashboard();
+});
+
+async function renderBodyProgress(){
+  var { data: logs } = await sb.from('body_progress').select('*').eq('user_id', CURRENT_USER.id).order('log_date', {ascending:true});
+  if(!logs || logs.length === 0){
+    $('bodyLogList').innerHTML = '<p class="muted center">هنوز اندازه‌گیری ثبت نشده.</p>';
+    hide($('bodyCompareCard'));
+    return;
+  }
+  if(logs.length >= 2){
+    var first = logs[0], lastLog = logs[logs.length-1];
+    function delta(a,b){ if(a==null||b==null) return '--'; var d=(b-a).toFixed(1); return (d>0?'+':'')+d; }
+    $('bodyCompareBody').innerHTML =
+      'وزن: ' + first.weight_kg + ' → ' + lastLog.weight_kg + ' (' + delta(first.weight_kg,lastLog.weight_kg) + ' kg)<br>' +
+      'دور شکم: ' + (first.waist_cm||'--') + ' → ' + (lastLog.waist_cm||'--') + ' (' + delta(first.waist_cm,lastLog.waist_cm) + ' cm)<br>' +
+      'دور بازو: ' + (first.arm_cm||'--') + ' → ' + (lastLog.arm_cm||'--') + ' (' + delta(first.arm_cm,lastLog.arm_cm) + ' cm)';
+    show($('bodyCompareCard'));
+  }
+  $('bodyLogList').innerHTML = logs.slice().reverse().map(function(l){
+    return '<div class="ex-item"><b>' + l.log_date + '</b><span>' + (l.weight_kg||'--') + ' kg</span></div>';
+  }).join('');
+}
+
+// =========================================================
+// PROFILE + ACHIEVEMENTS
+// =========================================================
+async function renderProfile(){
+  var p = CURRENT_PROFILE;
+  $('profName').textContent = p.full_name;
+  $('profXP').textContent = p.xp || 0;
+  $('profLevel').textContent = p.level_num || 1;
+  $('profStreakBest').textContent = p.streak_best || 0;
+  $('profTotal').textContent = p.total_workouts || 0;
+
+  var { data: catalog } = await sb.from('achievements').select('*');
+  var { data: mine } = await sb.from('user_achievements').select('achievement_code').eq('user_id', CURRENT_USER.id);
+  var gotCodes = (mine||[]).map(function(m){ return m.achievement_code; });
+  $('badgeGrid').innerHTML = (catalog||[]).map(function(a){
+    var got = gotCodes.indexOf(a.code) !== -1;
+    return '<div class="badge ' + (got?'got':'') + '"><div class="ic">' + a.icon + '</div><div class="t">' + a.title + '</div></div>';
+  }).join('');
+}
+$('logoutBtn').addEventListener('click', async function(){
+  await sb.auth.signOut();
+});
+</script>
+</body>
+</html>

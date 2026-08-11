@@ -129,20 +129,22 @@ body{
   position:fixed;inset:0;
   background:var(--black);
   z-index:9998;
-  pointer-events:none;
+  pointer-events:none !important;
   opacity:0;
   display:flex;align-items:center;justify-content:center;
   font-family:'Courier New',monospace;
   font-size:14px;color:var(--gold);
   letter-spacing:3px;
   overflow:hidden;
+  visibility:hidden;
 }
 #pageTransition.active{
-  pointer-events:all;
-  animation:ptIn 0.6s ease forwards;
+  pointer-events:none !important;
+  visibility:visible;
+  animation:ptIn 0.4s ease forwards;
 }
 #pageTransition.exit{
-  animation:ptOut 0.4s ease forwards;
+  animation:ptOut 0.3s ease forwards;
 }
 @keyframes ptIn{
   0%{opacity:0;clip-path:circle(0% at 50% 50%)}
@@ -1094,9 +1096,11 @@ document.addEventListener('keydown', e => {
 
 // ── Smooth scroll for buttons
 function smoothScroll(e, target) {
-  e.preventDefault();
-  const el = document.querySelector(target);
-  if (el) el.scrollIntoView({behavior:'smooth'});
+  if(e) e.preventDefault();
+  setTimeout(() => {
+    const el = document.querySelector(target);
+    if (el) el.scrollIntoView({behavior:'smooth'});
+  }, 10);
 }
 
 // ── Clock

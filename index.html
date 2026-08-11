@@ -1262,9 +1262,11 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
         const card = document.createElement('div');
         card.className = 'skill-card';
         card.style.cursor = 'default';
-        const iconHtml2 = getIcon(skill.name);
+        const iconContent = skill.icon_url 
+          ? `<img src="${skill.icon_url}" style="width:48px;height:48px;object-fit:cover;border-radius:10px">`
+          : getIcon(skill.name);
         card.innerHTML = `
-          <div class="skill-icon-wrap" style="padding:8px">${iconHtml2}</div>
+          <div class="skill-icon-wrap" style="padding:4px">${iconContent}</div>
           <div class="skill-name">${skill.name.toUpperCase()}</div>
           <div class="skill-click-hint">سطح تسلط: ${skill.level}%</div>
           <div class="skill-bar">

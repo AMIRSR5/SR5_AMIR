@@ -402,8 +402,14 @@ section{position:relative;z-index:1;min-height:100vh;padding:100px 2rem 4rem;max
 
 /* HERO */
 #home{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:120px;position:relative}
-.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:var(--dark)}
 #home > *:not(.hero-bg){position:relative;z-index:1}
+#heroScrubVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 500ms ease}
+#heroScrubCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 500ms ease}
+.hero-video-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,17,17,.15) 0%,rgba(17,17,17,.55) 65%,rgba(17,17,17,.88) 100%);pointer-events:none}
+@media (prefers-reduced-motion: reduce){
+  #heroScrubVideo,#heroScrubCanvas{transition:none}
+}
 #smartClock{font-family:'Orbitron',sans-serif;font-size:clamp(2.5rem,8vw,5rem);font-weight:700;color:var(--gold);letter-spacing:4px}
 .clock-date{font-size:13px;color:var(--text-muted);margin-top:6px;letter-spacing:2px;font-family:'Orbitron',sans-serif}
 .hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.4rem,4vw,2.8rem);font-weight:900;color:var(--text);margin:1.5rem 0 .5rem;line-height:1.2}
@@ -674,7 +680,9 @@ footer span{color:var(--gold);font-weight:600}
 <!-- HOME -->
 <section id="home">
   <div class="hero-bg">
-    <canvas id="techCanvas" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.6"></canvas>
+    <video id="heroScrubVideo" muted playsinline preload="auto" aria-hidden="true"></video>
+    <canvas id="heroScrubCanvas" aria-hidden="true"></canvas>
+    <div class="hero-video-overlay" aria-hidden="true"></div>
     <div class="hero-scan"></div>
     <div class="hero-corner hero-corner-tl"></div>
     <div class="hero-corner hero-corner-tr"></div>
@@ -1403,100 +1411,168 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
 })();
 </script>
 
-<!-- Tech Canvas Background -->
+<!-- Cinematic Scroll-Scrubbed Video Background -->
 <script>
 (function(){
-  const canvas = document.getElementById('techCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  
-  function resize(){
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
+  var VIDEO_SRC = 'https://meez.design/web/media/prompt-media/v/256a995befea43be.mp4';
+  var video = document.getElementById('heroScrubVideo');
+  var canvas = document.getElementById('heroScrubCanvas');
+  if(!video || !canvas) return;
+  var ctx = canvas.getContext('2d');
+  var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var supportsImageBitmap = typeof window.createImageBitmap === 'function';
 
-  // Circuit nodes
-  const nodes = [];
-  const nodeCount = 30;
-  for(let i=0; i<nodeCount; i++){
-    nodes.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random()-0.5)*0.3,
-      vy: (Math.random()-0.5)*0.3,
-      size: Math.random()*2+1,
-      pulse: Math.random()*Math.PI*2
-    });
+  video.src = VIDEO_SRC;
+
+  // ---- Canvas sizing (object-cover math, capped DPR) ----
+  function resizeCanvas(){
+    var w = canvas.offsetWidth, h = canvas.offsetHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.round(w * dpr));
+    canvas.height = Math.max(1, Math.round(h * dpr));
+  }
+  resizeCanvas();
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resizeCanvas, 150);
+  }, {passive:true});
+
+  function drawCover(source, sw, sh){
+    if(!sw || !sh || !canvas.width || !canvas.height) return;
+    var scale = Math.max(canvas.width / sw, canvas.height / sh);
+    var dw = sw * scale, dh = sh * scale;
+    var dx = (canvas.width - dw) / 2, dy = (canvas.height - dh) / 2;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(source, dx, dy, dw, dh);
   }
 
-  // Grid
-  function drawGrid(){
-    ctx.strokeStyle = 'rgba(201,168,76,0.05)';
-    ctx.lineWidth = 1;
-    const s = 50;
-    for(let x=0; x<canvas.width; x+=s){
-      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
+  // ---- Scroll progress (clamped 0..1, passive listener) ----
+  var target = 0, smoothed = 0;
+  function updateTarget(){
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    target = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+  }
+  updateTarget();
+  window.addEventListener('scroll', updateTarget, {passive:true});
+  window.addEventListener('resize', updateTarget, {passive:true});
+
+  // ---- Offscreen frame cache (ImageBitmap) ----
+  var frames = [];
+  var frameCacheReady = false;
+
+  function revealCanvas(){
+    canvas.style.opacity = '1';
+    video.style.opacity = '0';
+  }
+
+  function buildFrameCache(){
+    if(reduceMotion || !supportsImageBitmap) return;
+    var off = document.createElement('video');
+    off.muted = true;
+    off.playsInline = true;
+    off.preload = 'auto';
+    off.src = VIDEO_SRC;
+
+    off.addEventListener('loadedmetadata', function(){
+      var duration = off.duration;
+      if(!duration || !isFinite(duration)) return;
+
+      var frameCount = Math.min(90, Math.max(24, Math.round(duration * 12)));
+      var maxW = 960;
+      var vw = off.videoWidth || maxW, vh = off.videoHeight || Math.round(maxW * 9 / 16);
+      var scale = Math.min(1, maxW / vw);
+      var fw = Math.max(1, Math.round(vw * scale));
+      var fh = Math.max(1, Math.round(vh * scale));
+
+      var tmp = document.createElement('canvas');
+      tmp.width = fw; tmp.height = fh;
+      var tctx = tmp.getContext('2d');
+
+      var collected = [];
+      var i = 0;
+
+      function captureNext(){
+        if(i >= frameCount){
+          frames = collected;
+          frameCacheReady = true;
+          return;
+        }
+        var t = frameCount > 1 ? (duration - 0.05) * (i / (frameCount - 1)) : 0;
+
+        function onSeeked(){
+          off.removeEventListener('seeked', onSeeked);
+          try{
+            tctx.drawImage(off, 0, 0, fw, fh);
+            var settle = function(bmp){
+              collected.push(bmp);
+              i++;
+              captureNext();
+            };
+            if(supportsImageBitmap){
+              createImageBitmap(tmp).then(settle).catch(function(){ i++; captureNext(); });
+            } else {
+              i++; captureNext();
+            }
+          }catch(e){
+            // Likely a cross-origin canvas taint — abandon the cache and rely on fallback.
+            frames = [];
+            frameCacheReady = false;
+          }
+        }
+        off.addEventListener('seeked', onSeeked, {once:true});
+        try{ off.currentTime = t; }catch(e){ off.removeEventListener('seeked', onSeeked); i++; captureNext(); }
+      }
+      captureNext();
+    }, {once:true});
+
+    off.addEventListener('error', function(){ /* frame cache unavailable, fallback path handles it */ }, {once:true});
+  }
+
+  video.addEventListener('loadeddata', function onLoaded(){
+    video.removeEventListener('loadeddata', onLoaded);
+    resizeCanvas();
+    if(!reduceMotion){
+      setTimeout(buildFrameCache, 300);
     }
-    for(let y=0; y<canvas.height; y+=s){
-      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
-    }
+  }, {once:true});
+
+  // ---- Reduced motion: show a single stable frame, no scrubbing ----
+  if(reduceMotion){
+    video.addEventListener('loadeddata', function(){
+      try{ video.currentTime = Math.min(1, (video.duration || 2) * 0.15); }catch(e){}
+    }, {once:true});
+    return;
   }
 
-  let frame = 0;
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    
-    // Grid
-    drawGrid();
+  // ---- rAF scrub loop ----
+  var rafId = null;
+  function loop(){
+    smoothed += (target - smoothed) * 0.12;
 
-    // Update and draw nodes
-    frame++;
-    nodes.forEach(n=>{
-      n.x += n.vx; n.y += n.vy;
-      n.pulse += 0.03;
-      if(n.x<0||n.x>canvas.width) n.vx*=-1;
-      if(n.y<0||n.y>canvas.height) n.vy*=-1;
-      
-      const alpha = 0.4 + 0.6*Math.sin(n.pulse);
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.size, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(201,168,76,${alpha})`;
-      ctx.fill();
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = 'rgba(201,168,76,0.5)';
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    });
-
-    // Draw connections between close nodes
-    ctx.lineWidth = 0.5;
-    for(let i=0;i<nodes.length;i++){
-      for(let j=i+1;j<nodes.length;j++){
-        const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
-        const dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<120){
-          const alpha = (1-dist/120)*0.3;
-          ctx.strokeStyle=`rgba(201,168,76,${alpha})`;
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x,nodes[i].y);
-          ctx.lineTo(nodes[j].x,nodes[j].y);
-          ctx.stroke();
+    if(frameCacheReady && frames.length){
+      if(canvas.style.opacity !== '1') revealCanvas();
+      var idx = Math.round(smoothed * (frames.length - 1));
+      idx = Math.max(0, Math.min(frames.length - 1, idx));
+      var bmp = frames[idx];
+      drawCover(bmp, bmp.width, bmp.height);
+    } else if(video.readyState >= 2){
+      var duration = video.duration;
+      if(duration && isFinite(duration)){
+        var desired = smoothed * (duration - 0.05);
+        if(Math.abs(video.currentTime - desired) > 0.04){
+          try{ video.currentTime = desired; }catch(e){}
         }
       }
     }
-
-    // Radial glow center
-    const grad = ctx.createRadialGradient(canvas.width/2,canvas.height/2,0,canvas.width/2,canvas.height/2,canvas.width*0.6);
-    grad.addColorStop(0,'rgba(201,168,76,0.06)');
-    grad.addColorStop(1,'transparent');
-    ctx.fillStyle=grad;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    requestAnimationFrame(draw);
+    rafId = requestAnimationFrame(loop);
   }
-  draw();
+  rafId = requestAnimationFrame(loop);
+
+  window.addEventListener('pagehide', function(){
+    if(rafId) cancelAnimationFrame(rafId);
+    frames.forEach(function(b){ if(b && b.close) b.close(); });
+  });
 })();
 </script>
 

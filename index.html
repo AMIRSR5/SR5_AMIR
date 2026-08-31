@@ -1414,7 +1414,7 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
 <!-- Cinematic Scroll-Scrubbed Video Background -->
 <script>
 (function(){
-  var VIDEO_SRC = 'https://meez.design/web/media/prompt-media/v/256a995befea43be.mp4';
+  var VIDEO_SRC = 'https://cdn.pixabay.com/video/2020/02/24/32767-394004551_large.mp4';
   var video = document.getElementById('heroScrubVideo');
   var canvas = document.getElementById('heroScrubCanvas');
   if(!video || !canvas) return;
@@ -1423,6 +1423,11 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
   var supportsImageBitmap = typeof window.createImageBitmap === 'function';
 
   video.src = VIDEO_SRC;
+  setTimeout(function(){
+    if(video.readyState < 2){
+      console.warn('[hero video] still not loaded after 8s (readyState=' + video.readyState + ', networkState=' + video.networkState + '). Check the Network tab for the request to', VIDEO_SRC);
+    }
+  }, 8000);
 
   // ---- Canvas sizing (object-cover math, capped DPR) ----
   function resizeCanvas(){
@@ -1532,10 +1537,21 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
   video.addEventListener('loadeddata', function onLoaded(){
     video.removeEventListener('loadeddata', onLoaded);
     resizeCanvas();
+    // Warm up the decode pipeline: some browsers won't paint/seek a video
+    // that has never played, so play muted for an instant then pause.
+    var p = video.play();
+    if(p && p.catch) p.catch(function(){ /* autoplay blocked, seeking fallback still works */ });
+    if(!video.paused){
+      setTimeout(function(){ try{ video.pause(); }catch(e){} }, 60);
+    }
     if(!reduceMotion){
       setTimeout(buildFrameCache, 300);
     }
   }, {once:true});
+
+  video.addEventListener('error', function(){
+    console.warn('[hero video] failed to load:', VIDEO_SRC, video.error);
+  });
 
   // ---- Reduced motion: show a single stable frame, no scrubbing ----
   if(reduceMotion){

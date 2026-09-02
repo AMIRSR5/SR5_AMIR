@@ -420,10 +420,14 @@ section{position:relative;z-index:1;min-height:100vh;padding:100px 2rem 4rem;max
 .sr5-media{position:absolute;inset:0;border-radius:0;overflow:hidden;background:#000;box-shadow:0 0 0 rgba(0,0,0,0)}
 #sr5Canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .sr5-media::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.75) 100%)}
-.sr5-smear-wrap{position:absolute;left:6%;bottom:10%;z-index:2;pointer-events:none}
+.sr5-smear-wrap{position:absolute;left:6%;right:6%;bottom:calc(20% + env(safe-area-inset-bottom, 0px));z-index:2;pointer-events:none;--sr5-headline-h:clamp(3.2rem,18vw,12rem)}
+.sr5-scroll-cta{margin-top:calc(var(--sr5-headline-h) + 14px);display:flex;align-items:center;gap:10px;font-family:'Vazirmatn',sans-serif;font-size:13px;letter-spacing:.5px;color:var(--gold-light,var(--gold));opacity:.9}
+.sr5-scroll-cta .arrow{display:inline-block;animation:sr5Bounce 1.5s ease-in-out infinite}
+@keyframes sr5Bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
 .sr5-smear-sub{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:4px;color:var(--gold-light,var(--gold));margin-bottom:10px;opacity:.85}
 .sr5-smear{position:absolute;top:0;left:0;font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(3.2rem,18vw,12rem);line-height:1;white-space:nowrap;letter-spacing:2px}
-.sr5-smear.base{position:relative;color:#fff}
+.sr5-smear.base{position:relative;color:#fff;text-shadow:0 0 18px rgba(201,168,76,.9),0 0 40px rgba(201,168,76,.55),0 0 75px rgba(232,201,106,.35);animation:sr5Glow 3.2s ease-in-out infinite}
+@keyframes sr5Glow{0%,100%{text-shadow:0 0 18px rgba(201,168,76,.9),0 0 40px rgba(201,168,76,.55),0 0 75px rgba(232,201,106,.35)}50%{text-shadow:0 0 26px rgba(201,168,76,1),0 0 60px rgba(201,168,76,.75),0 0 110px rgba(232,201,106,.5)}}
 .sr5-smear.s1{color:var(--gold);opacity:.5}
 .sr5-smear.s2{color:var(--gold-light,var(--gold));opacity:.35}
 .sr5-smear.s3{color:#fff;opacity:.2}
@@ -433,9 +437,7 @@ section{position:relative;z-index:1;min-height:100vh;padding:100px 2rem 4rem;max
 .sr5-panel h2 em{color:var(--gold);font-style:normal}
 .sr5-chip-row{margin-top:30px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .sr5-chip{border:1px solid rgba(201,168,76,.4);color:var(--gold-light,var(--gold));font-size:12px;letter-spacing:1px;padding:7px 16px;border-radius:999px;font-family:'Orbitron',sans-serif}
-.sr5-scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:4;color:var(--text-muted);font-size:11px;letter-spacing:3px;display:flex;flex-direction:column;align-items:center;gap:8px}
-.sr5-scroll-hint .line{width:1px;height:28px;background:linear-gradient(var(--gold),transparent);animation:sr5Pulse 1.6s ease-in-out infinite}
-@keyframes sr5Pulse{0%,100%{opacity:.25}50%{opacity:1}}
+
 .btn-outline:hover{background:rgba(201,168,76,.08);transform:translateY(-2px)}
 
 /* SECTION HEADER */
@@ -706,6 +708,7 @@ footer span{color:var(--gold);font-weight:600}
         <span class="sr5-smear s2">SR5</span>
         <span class="sr5-smear s1">SR5</span>
         <span class="sr5-smear base">SR5</span>
+        <div class="sr5-scroll-cta" id="sr5ScrollCta"><span>برای دیدن بیشتر اسکرول کن</span><span class="arrow">↓</span></div>
       </div>
 
       <div class="sr5-panel" id="sr5Panel">
@@ -718,8 +721,6 @@ footer span{color:var(--gold);font-weight:600}
           <span class="sr5-chip">PWA</span>
         </div>
       </div>
-
-      <div class="sr5-scroll-hint"><span>SCROLL</span><span class="line"></span></div>
     </div>
   </div>
 </section>
@@ -1656,8 +1657,7 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
         boxShadow:'0 40px 90px rgba(0,0,0,.6)',
         duration:0.5
       }, 0.28)
-      .fromTo('#sr5Panel', {opacity:0, y:24}, {opacity:1, y:0, duration:0.3}, 0.64)
-      .to('.sr5-scroll-hint', {opacity:0, duration:0.1}, 0.03);
+      .fromTo('#sr5Panel', {opacity:0, y:24}, {opacity:1, y:0, duration:0.3}, 0.64);
 
     /* re-measure once everything (fonts, layout) has actually settled */
     window.addEventListener('load', function(){ ScrollTrigger.refresh(); });

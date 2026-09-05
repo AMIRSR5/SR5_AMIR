@@ -313,6 +313,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <a class="nav-item" onclick="showPage('gallery')" href="#">
     <span class="nav-icon">🖼️</span> عکس‌های من
   </a>
+  <a class="nav-item" onclick="showPage('music')" href="#">
+    <span class="nav-icon">🎵</span> موزیک پس‌زمینه
+  </a>
   <a class="nav-item" onclick="showPage('skills')" href="#">
     <span class="nav-icon">⚡</span> مهارت‌ها
   </a>
@@ -487,6 +490,24 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="gallery-grid" id="gallery-grid">
         <div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- MUSIC -->
+  <div class="page" id="page-music">
+    <div class="page-title">موزیک پس‌زمینه</div>
+    <div class="page-sub">وقتی کاربر وارد سایت می‌شه، یه کادر کوچیک ازش می‌پرسه صدا پخش بشه یا نه — خودِ موزیک بی‌صدا و خودکار از قبل آماده‌ست</div>
+    <div class="section-card">
+      <h3>وضعیت فعلی</h3>
+      <div id="music-current"><div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div></div>
+    </div>
+    <div class="section-card">
+      <h3>آپلود / جایگزینی موزیک</h3>
+      <div class="form-group">
+        <label>یک فایل صوتی انتخاب کن (MP3 / M4A / OGG — حداکثر چند مگابایت، برای لود سریع سایت)</label>
+        <input type="file" id="music-file-input" accept="audio/*" onchange="handleMusicUpload(this.files)">
+      </div>
+      <div id="music-upload-status" style="font-size:13px;color:var(--text-muted)"></div>
     </div>
   </div>
 
@@ -751,6 +772,7 @@ function showPage(name) {
 
   if (name === 'skills') loadSkills();
   if (name === 'gallery') loadGallery();
+  if (name === 'music') loadMusic();
   if (name === 'projects') loadProjects();
   if (name === 'blog') loadPosts();
   if (name === 'settings') loadSiteSettings();
@@ -1064,6 +1086,101 @@ async function handleGalleryUpload(files) {
     : `✅ ${done} عکس با موفقیت آپلود شد`;
   toast(failed ? 'برخی آپلودها ناموفق بودند' : '✅ عکس‌ها آپلود شدند', failed ? 'error' : 'success');
   input.value = '';
+}
+
+// ============================================================
+// MUSIC (موزیک پس‌زمینه)
+// ============================================================
+const MUSIC_BUCKET = 'music';
+let currentMusic = null;
+
+async function loadMusic() {
+  const box = document.getElementById('music-current');
+  try {
+    const { data, error } = await sb.from('site_music').select('*').eq('id', 1).single();
+    if (error) throw error;
+    currentMusic = data;
+    renderMusicStatus();
+  } catch (e) {
+    console.error('loadMusic error:', e);
+    box.innerHTML = `<div class="gallery-empty">⚠️ خطا در خواندن جدول site_music:<br><span dir="ltr" style="font-family:monospace;font-size:12px;color:#fca5a5">${(e && e.message) || 'نامشخص'}</span><br><br>اگه جدول ساخته نشده، فایل SETUP.sql رو (نسخه‌ی جدید که موزیک هم توشه) دوباره تو Supabase اجرا کن.</div>`;
+  }
+}
+
+function renderMusicStatus() {
+  const box = document.getElementById('music-current');
+  if (!currentMusic || !currentMusic.url) {
+    box.innerHTML = '<div class="gallery-empty">هنوز موزیکی آپلود نشده.</div>';
+    return;
+  }
+  box.innerHTML = `
+    <audio controls src="${currentMusic.url}" style="width:100%;margin-bottom:12px"></audio>
+    <button class="btn btn-danger" onclick="deleteMusic()">🗑️ حذف موزیک</button>
+  `;
+}
+
+async function handleMusicUpload(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  const statusEl = document.getElementById('music-upload-status');
+  const input = document.getElementById('music-file-input');
+
+  statusEl.textContent = 'در حال آپلود...';
+  try {
+    // Remove old file first (if any) so storage doesn't fill up with orphans.
+    if (currentMusic && currentMusic.path) {
+      await sb.storage.from(MUSIC_BUCKET).remove([currentMusic.path]);
+    }
+
+    const ext = (file.name.split('.').pop() || 'mp3').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
+    const path = `bg/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+    const { error: upErr } = await sb.storage.from(MUSIC_BUCKET).upload(path, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+    if (upErr) throw upErr;
+
+    const { data: pub } = sb.storage.from(MUSIC_BUCKET).getPublicUrl(path);
+    const url = pub.publicUrl;
+
+    const { data: updated, error: updErr } = await sb.from('site_music')
+      .update({ url, path, updated_at: new Date().toISOString() })
+      .eq('id', 1)
+      .select()
+      .single();
+    if (updErr) throw updErr;
+
+    currentMusic = updated;
+    renderMusicStatus();
+    statusEl.textContent = '✅ موزیک با موفقیت آپلود شد';
+    toast('✅ موزیک آپلود شد');
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = '⚠️ آپلود ناموفق بود: ' + (e.message || 'نامشخص');
+    toast('خطا در آپلود موزیک', 'error');
+  }
+  input.value = '';
+}
+
+async function deleteMusic() {
+  if (!confirm('موزیک پس‌زمینه حذف بشه؟')) return;
+  try {
+    if (currentMusic && currentMusic.path) {
+      await sb.storage.from(MUSIC_BUCKET).remove([currentMusic.path]);
+    }
+    const { data: updated, error } = await sb.from('site_music')
+      .update({ url: null, path: null, updated_at: new Date().toISOString() })
+      .eq('id', 1)
+      .select()
+      .single();
+    if (error) throw error;
+    currentMusic = updated;
+    renderMusicStatus();
+    toast('🗑️ موزیک حذف شد');
+  } catch (e) {
+    toast('خطا: ' + e.message, 'error');
+  }
 }
 
 // ============================================================

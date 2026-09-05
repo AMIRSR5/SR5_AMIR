@@ -406,31 +406,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 
-  <!-- Video Upload Section -->
-  <div class="section-card">
-    <h3>🎬 ویدیو معرفی (درباره ما)</h3>
-    <div style="margin-bottom:1rem">
-      <div id="video-preview-wrap" style="display:none;margin-bottom:1rem">
-        <video id="video-preview" controls style="width:100%;border-radius:8px;border:1px solid rgba(201,168,76,0.2);max-height:200px;background:#000"></video>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <input type="file" id="video-file" accept="video/*" onchange="previewVideo(this)" style="display:none">
-        <button class="btn btn-ghost" onclick="document.getElementById('video-file').click()">📁 انتخاب ویدیو</button>
-        <div style="font-size:11px;color:var(--text-muted)">MP4، MOV — حداکثر 50MB</div>
-      </div>
-      <div style="margin-top:0.75rem">
-        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px">یا لینک ویدیو (YouTube / آپارات)</label>
-        <input type="url" id="video-url" placeholder="https://www.youtube.com/embed/..." dir="ltr" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:7px;color:var(--text);font-size:13px;font-family:inherit;outline:none">
-      </div>
-      <input type="hidden" id="video-stored-url">
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="uploadVideo()">🚀 آپلود ویدیو</button>
-      <button class="btn btn-primary" onclick="saveVideoUrl()" style="background:rgba(201,168,76,0.3)">💾 ذخیره لینک</button>
-      <div id="video-upload-status" style="font-size:12px;color:var(--text-muted);align-self:center"></div>
-    </div>
-  </div>
-
   <!-- CONTACT -->
   <div class="page" id="page-contact">
     <div class="page-title">اطلاعات تماس</div>
@@ -525,20 +500,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="form-group">
         <label>تکنولوژی‌ها (با کاما جدا کن)</label>
         <input type="text" id="p-tech" placeholder="React, JavaScript, PWA" dir="ltr">
-      </div>
-      <div class="form-group">
-        <label>آیکون پروژه</label>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <div id="p-icon-preview" style="width:60px;height:60px;border-radius:12px;border:1px solid rgba(201,168,76,0.3);overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04)">
-            <span style="font-size:1.5rem">📦</span>
-          </div>
-          <div>
-            <input type="file" id="p-icon-file" accept="image/*" onchange="previewIcon(this)" style="display:none">
-            <button class="btn btn-ghost" style="font-size:12px" onclick="document.getElementById('p-icon-file').click()">📁 انتخاب عکس</button>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">JPG، PNG یا WEBP — حداکثر 2MB</div>
-          </div>
-        </div>
-        <input type="hidden" id="p-icon-url">
       </div>
       <div class="form-group">
         <label>وضعیت</label>
@@ -673,10 +634,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <div class="toast-wrap" id="toastWrap"></div>
 
-<script>
-const SUPABASE_URL = 'https://rsyglfecaxbuqxfcwtpl.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeWdsZmVjYXhidXF4ZmN3dHBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyMTQ4NDcsImV4cCI6MjEwMTc5MDg0N30._cYxGmD0sjlIEczRXtxnc5o4UyYVuVWmMqRkr2Wvqmk';
-</script>
+<script src="config.js"></script>
 <script>
 // ============================================================
 // INIT
@@ -794,7 +752,6 @@ async function loadDashboard() {
 // SITE SETTINGS
 // ============================================================
 async function loadSiteSettings() {
-  await loadVideoSettings();
   try {
     const { data } = await sb.from('site_settings').select('*').single();
     if (data) {
@@ -863,7 +820,7 @@ async function saveContact() {
 async function loadSkills() {
   const container = document.getElementById('skills-list');
   try {
-    const { data } = await sb.from('skills').select('id,name,level,icon_url,sort_order').order('sort_order');
+    const { data } = await sb.from('skills').select('*').order('sort_order');
     skillsData = data || defaultSkills();
     renderSkills();
   } catch(e) {
@@ -888,24 +845,11 @@ function renderSkills() {
   skillsData.forEach((skill, i) => {
     const row = document.createElement('div');
     row.className = 'skill-row';
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(201,168,76,0.1);margin-bottom:6px';
-    
-    const imgPreview = skill.icon_url 
-      ? `<img src="${skill.icon_url}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid rgba(201,168,76,0.3)">`
-      : `<div style="width:40px;height:40px;border-radius:8px;background:rgba(201,168,76,0.1);border:1px dashed rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-size:18px">💡</div>`;
-    
     row.innerHTML = `
-      <div style="position:relative;cursor:pointer" onclick="document.getElementById('skill-img-${i}').click()">
-        ${imgPreview}
-        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);border-radius:8px;display:flex;align-items:center;justify-content:center;opacity:0;transition:0.2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-          <span style="font-size:16px">📷</span>
-        </div>
-      </div>
-      <input type="file" id="skill-img-${i}" accept="image/*" style="display:none" onchange="uploadSkillIcon(${i},this)">
-      <input type="text" value="${skill.name}" placeholder="نام مهارت" onchange="skillsData[${i}].name=this.value" style="flex:1;min-width:100px">
-      <input type="range" min="0" max="100" value="${skill.level}" style="flex:1;min-width:80px;accent-color:var(--gold)" oninput="skillsData[${i}].level=+this.value;this.nextElementSibling.textContent=this.value+'%'">
+      <input type="text" value="${skill.name}" placeholder="نام مهارت" onchange="skillsData[${i}].name=this.value">
+      <input type="range" min="0" max="100" value="${skill.level}" oninput="skillsData[${i}].level=+this.value;this.nextElementSibling.textContent=this.value+'%'">
       <span class="skill-pct">${skill.level}%</span>
-      <button class="btn btn-danger" style="padding:6px 10px;font-size:11px;white-space:nowrap" onclick="removeSkill(${i})">حذف</button>
+      <button class="btn btn-danger" style="padding:6px 10px;font-size:11px" onclick="removeSkill(${i})">حذف</button>
     `;
     container.appendChild(row);
   });
@@ -921,55 +865,16 @@ function removeSkill(i) {
   renderSkills();
 }
 
-async function uploadSkillIcon(index, input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  
-  // Show loading
-  toast('⏳ در حال آپلود عکس...');
-  
-  try {
-    // Create bucket
-    await sb.storage.createBucket('skill-icons', { public: true }).catch(() => {});
-    
-    const ext = file.name.split('.').pop();
-    const fileName = `skill-${Date.now()}-${index}.${ext}`;
-    const { error } = await sb.storage.from('skill-icons').upload(fileName, file, { upsert: true });
-    if (error) throw error;
-    
-    const { data: urlData } = sb.storage.from('skill-icons').getPublicUrl(fileName);
-    skillsData[index].icon_url = urlData.publicUrl;
-    
-    toast('✅ عکس آپلود شد');
-    renderSkills(); // Re-render to show new image
-  } catch(e) {
-    toast('خطا: ' + e.message, 'error');
-  }
-}
-
 async function saveSkills() {
   try {
-    // Get all existing IDs first, then delete them
-    const { data: existing } = await sb.from('skills').select('id');
-    if (existing && existing.length > 0) {
-      const ids = existing.map(r => r.id);
-      await sb.from('skills').delete().in('id', ids);
-    }
-    // Insert new list
-    const inserts = skillsData
-      .filter(s => s.name && s.name.trim())
-      .map((s, i) => ({
-        name: s.name.trim(),
-        level: s.level,
-        icon_url: s.icon_url || null,
-        sort_order: i + 1
-      }));
-    if (inserts.length > 0) {
-      const { error } = await sb.from('skills').insert(inserts);
-      if (error) throw error;
-    }
+    // Delete all and re-insert
+    await sb.from('skills').delete().neq('id', 0);
+    const inserts = skillsData.map((s, i) => ({
+      name: s.name, level: s.level, sort_order: i + 1
+    }));
+    const { error } = await sb.from('skills').insert(inserts);
+    if (error) throw error;
     toast('✅ مهارت‌ها ذخیره شدند');
-    await loadSkills();
   } catch(e) {
     toast('خطا: ' + e.message, 'error');
   }
@@ -1036,44 +941,22 @@ function editProject(id) {
   document.getElementById('p-apk').value = p.apk_url || '';
   document.getElementById('p-tech').value = (p.technologies || []).join(', ');
   document.getElementById('p-status').value = p.status || 'published';
-  document.getElementById('p-icon-url').value = p.icon_url || '';
-  const preview = document.getElementById('p-icon-preview');
-  if (p.icon_url) {
-    preview.innerHTML = `<img src="${p.icon_url}" style="width:100%;height:100%;object-fit:cover">`;
-  } else {
-    preview.innerHTML = '<span style="font-size:1.5rem">📦</span>';
-  }
   document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
 }
 
 function cancelProject() {
   document.getElementById('project-form').style.display = 'none';
-  document.getElementById('p-icon-file').value = '';
-  document.getElementById('p-icon-url').value = '';
-  const preview = document.getElementById('p-icon-preview');
-  if (preview) preview.innerHTML = '<span style="font-size:1.5rem">📦</span>';
 }
 
 async function saveProject() {
   const id = document.getElementById('p-id').value;
-  const title = document.getElementById('p-title').value;
-
-  // Upload icon if selected
-  const iconFile = document.getElementById('p-icon-file').files[0];
-  let iconUrl = document.getElementById('p-icon-url').value;
-  if (iconFile) {
-    const uploaded = await uploadProjectIcon(iconFile, title);
-    if (uploaded) iconUrl = uploaded;
-  }
-
   const data = {
-    title,
+    title: document.getElementById('p-title').value,
     subtitle: document.getElementById('p-subtitle').value,
     description: document.getElementById('p-desc').value,
     demo_url: document.getElementById('p-url').value,
     apk_url: document.getElementById('p-apk').value,
     technologies: document.getElementById('p-tech').value.split(',').map(s=>s.trim()).filter(Boolean),
-    icon_url: iconUrl || null,
     status: document.getElementById('p-status').value,
     updated_at: new Date().toISOString()
   };
@@ -1295,120 +1178,6 @@ function insertList(type) {
   const ta = document.getElementById('post-content');
   const pos = ta.selectionEnd;
   ta.value = ta.value.substring(0, pos) + `\n<${type}>\n  <li>آیتم اول</li>\n  <li>آیتم دوم</li>\n</${type}>\n` + ta.value.substring(pos);
-}
-
-// ============================================================
-// VIDEO UPLOAD & PREVIEW
-// ============================================================
-function previewVideo(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  if (file.size > 50 * 1024 * 1024) {
-    toast('حجم ویدیو نباید بیشتر از 50MB باشد', 'error');
-    return;
-  }
-  const url = URL.createObjectURL(file);
-  const video = document.getElementById('video-preview');
-  const wrap = document.getElementById('video-preview-wrap');
-  video.src = url;
-  wrap.style.display = 'block';
-}
-
-async function uploadVideo() {
-  const file = document.getElementById('video-file').files[0];
-  if (!file) { toast('ابتدا ویدیو را انتخاب کنید', 'error'); return; }
-  
-  const status = document.getElementById('video-upload-status');
-  status.textContent = '⏳ در حال آپلود...';
-  
-  try {
-    // Create bucket if not exists
-    await sb.storage.createBucket('videos', { public: true }).catch(() => {});
-    
-    const fileName = 'about-video-' + Date.now() + '.' + file.name.split('.').pop();
-    const { data, error } = await sb.storage
-      .from('videos')
-      .upload(fileName, file, { cacheControl: '3600', upsert: true });
-    
-    if (error) throw error;
-    
-    const { data: urlData } = sb.storage.from('videos').getPublicUrl(fileName);
-    const videoUrl = urlData.publicUrl;
-    
-    // Save URL to site_settings
-    await sb.from('site_settings').upsert({ id: 1, about_video_url: videoUrl, updated_at: new Date().toISOString() });
-    
-    document.getElementById('video-stored-url').value = videoUrl;
-    status.textContent = '✅ آپلود موفق';
-    toast('✅ ویدیو آپلود و ذخیره شد');
-  } catch(e) {
-    status.textContent = '❌ خطا: ' + e.message;
-    toast('خطا: ' + e.message, 'error');
-  }
-}
-
-async function saveVideoUrl() {
-  const url = document.getElementById('video-url').value.trim();
-  if (!url) { toast('لینک ویدیو را وارد کنید', 'error'); return; }
-  try {
-    await sb.from('site_settings').upsert({ id: 1, about_video_url: url, updated_at: new Date().toISOString() });
-    toast('✅ لینک ویدیو ذخیره شد');
-  } catch(e) {
-    toast('خطا: ' + e.message, 'error');
-  }
-}
-
-async function loadVideoSettings() {
-  try {
-    const { data } = await sb.from('site_settings').select('about_video_url').eq('id', 1).single();
-    if (data && data.about_video_url) {
-      const url = data.about_video_url;
-      document.getElementById('video-stored-url').value = url;
-      if (url.includes('youtube') || url.includes('youtu.be') || url.includes('aparat')) {
-        document.getElementById('video-url').value = url;
-      } else {
-        const video = document.getElementById('video-preview');
-        const wrap = document.getElementById('video-preview-wrap');
-        video.src = url;
-        wrap.style.display = 'block';
-      }
-    }
-  } catch(e) {}
-}
-
-// ============================================================
-// ICON UPLOAD
-// ============================================================
-function previewIcon(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  if (file.size > 2 * 1024 * 1024) {
-    toast('حجم فایل نباید بیشتر از 2MB باشد', 'error');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => {
-    const preview = document.getElementById('p-icon-preview');
-    preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
-  };
-  reader.readAsDataURL(file);
-}
-
-async function uploadProjectIcon(file, projectTitle) {
-  if (!file) return null;
-  try {
-    const ext = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${projectTitle.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
-    const { data, error } = await sb.storage
-      .from('project-icons')
-      .upload(fileName, file, { cacheControl: '3600', upsert: true });
-    if (error) throw error;
-    const { data: urlData } = sb.storage.from('project-icons').getPublicUrl(fileName);
-    return urlData.publicUrl;
-  } catch(e) {
-    toast('خطا در آپلود عکس: ' + e.message, 'error');
-    return null;
-  }
 }
 
 // ============================================================

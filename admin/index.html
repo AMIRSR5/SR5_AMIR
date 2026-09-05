@@ -209,7 +209,7 @@ input::placeholder{color:var(--text-muted)}
   </div>
 </div>
 
-<script src="config.js?v=2"></script>
+<script>document.write('<scr'+'ipt src="config.js?t=' + Date.now() + '"></scr'+'ipt>');</script>
 <script>
 // ============================================================
 // Supabase Init — credentials از config.js میان
@@ -219,6 +219,20 @@ let supabaseClient = null;
 function initSupabase() {
   if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
     document.getElementById('configNotice').style.display = 'block';
+    // Diagnostic: find out exactly why config.js didn't take effect.
+    fetch('config.js?debug=' + Date.now())
+      .then(r => r.text().then(t => ({ status: r.status, ok: r.ok, text: t })))
+      .then(info => {
+        const notice = document.getElementById('configNotice');
+        notice.innerHTML += `<br><br><span dir="ltr" style="font-family:monospace;font-size:11px;opacity:.85">
+          fetch status: ${info.status} ${info.ok ? 'OK' : 'FAIL'}<br>
+          first 80 chars: ${info.text.slice(0, 80).replace(/</g, '&lt;')}
+        </span>`;
+      })
+      .catch(err => {
+        const notice = document.getElementById('configNotice');
+        notice.innerHTML += `<br><br><span dir="ltr" style="font-family:monospace;font-size:11px;color:#f88">fetch error: ${err.message}</span>`;
+      });
     return false;
   }
   try {

@@ -6,8 +6,8 @@
 //   Settings → API → Project URL و anon/public key
 // ============================================================
 
-const SUPABASE_URL = 'https://rsyglfecaxbuqxfcwtpl.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeWdsZmVjYXhidXF4ZmN3dHBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyMTQ4NDcsImV4cCI6MjEwMTc5MDg0N30._cYxGmD0sjlIEczRXtxnc5o4UyYVuVWmMqRkr2Wvqmk';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
 // مثال:
 // const SUPABASE_URL = 'https://xyzxyzxyz.supabase.co';

@@ -263,6 +263,17 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .skill-row input[type=range]{flex:1;accent-color:var(--gold)}
 .skill-pct{width:36px;font-size:13px;color:var(--gold)}
 
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.gallery-item{position:relative;border-radius:10px;overflow:hidden;border:1px solid rgba(201,168,76,0.2);background:rgba(255,255,255,0.03);aspect-ratio:3/4}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-item .g-order{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:var(--gold);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.gallery-item .g-actions{position:absolute;bottom:0;left:0;right:0;display:flex;gap:4px;padding:6px;background:linear-gradient(to top,rgba(0,0,0,0.85),transparent)}
+.gallery-item .g-actions button{flex:1;padding:5px 4px;font-size:11px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:var(--text);cursor:pointer}
+.gallery-item .g-actions button:hover{background:rgba(255,255,255,0.18)}
+.gallery-item .g-actions button.g-del{background:rgba(239,68,68,0.2);color:#fca5a5;border-color:rgba(239,68,68,0.3)}
+.gallery-item .g-actions button.g-del:hover{background:rgba(239,68,68,0.35)}
+.gallery-empty{grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;font-size:13px}
+
 @media(max-width:768px){
   .sidebar{transform:translateX(260px)}
   .sidebar.open{transform:translateX(0)}
@@ -298,6 +309,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </a>
   <a class="nav-item" onclick="showPage('contact')" href="#">
     <span class="nav-icon">📞</span> اطلاعات تماس
+  </a>
+  <a class="nav-item" onclick="showPage('gallery')" href="#">
+    <span class="nav-icon">🖼️</span> عکس‌های من
   </a>
   <a class="nav-item" onclick="showPage('skills')" href="#">
     <span class="nav-icon">⚡</span> مهارت‌ها
@@ -452,6 +466,26 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-ghost" onclick="addSkillRow()">+ افزودن مهارت</button>
         <button class="btn btn-primary" onclick="saveSkills()">💾 ذخیره همه</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="page" id="page-gallery">
+    <div class="page-title">عکس‌های من</div>
+    <div class="page-sub">این عکس‌ها به‌صورت اسلایدشوی خودکار در بخش About سایت نمایش داده می‌شن</div>
+    <div class="section-card">
+      <h3>افزودن عکس</h3>
+      <div class="form-group">
+        <label>یک یا چند عکس انتخاب کن (JPG / PNG / WebP)</label>
+        <input type="file" id="gallery-file-input" accept="image/*" multiple onchange="handleGalleryUpload(this.files)">
+      </div>
+      <div id="gallery-upload-status" style="font-size:13px;color:var(--text-muted)"></div>
+    </div>
+    <div class="section-card">
+      <h3>ترتیب نمایش <span style="font-size:12px;color:var(--text-muted);font-weight:400">(بالا رفتن = اول اسلایدشو)</span></h3>
+      <div class="gallery-grid" id="gallery-grid">
+        <div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div>
       </div>
     </div>
   </div>
@@ -698,6 +732,7 @@ function showPage(name) {
   closeSidebar();
 
   if (name === 'skills') loadSkills();
+  if (name === 'gallery') loadGallery();
   if (name === 'projects') loadProjects();
   if (name === 'blog') loadPosts();
   if (name === 'settings') loadSiteSettings();
@@ -878,6 +913,119 @@ async function saveSkills() {
   } catch(e) {
     toast('خطا: ' + e.message, 'error');
   }
+}
+
+// ============================================================
+// GALLERY (عکس‌های اسلایدشو)
+// ============================================================
+let galleryData = [];
+const GALLERY_BUCKET = 'gallery';
+
+async function loadGallery() {
+  const grid = document.getElementById('gallery-grid');
+  try {
+    const { data, error } = await sb.from('gallery_photos').select('*').order('sort_order');
+    if (error) throw error;
+    galleryData = data || [];
+    renderGalleryGrid();
+  } catch (e) {
+    grid.innerHTML = `<div class="gallery-empty">⚠️ جدول gallery_photos پیدا نشد.<br>اول باید SQL راه‌اندازی رو تو Supabase اجرا کنی (فایل SETUP.sql).</div>`;
+  }
+}
+
+function renderGalleryGrid() {
+  const grid = document.getElementById('gallery-grid');
+  if (!galleryData.length) {
+    grid.innerHTML = '<div class="gallery-empty">هنوز عکسی اضافه نکردی. از بالا یک یا چند عکس انتخاب کن.</div>';
+    return;
+  }
+  grid.innerHTML = galleryData.map((photo, i) => `
+    <div class="gallery-item">
+      <img src="${photo.url}" alt="عکس ${i + 1}" loading="lazy">
+      <div class="g-order">${i + 1}</div>
+      <div class="g-actions">
+        <button onclick="moveGalleryItem(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+        <button onclick="moveGalleryItem(${i}, 1)" ${i === galleryData.length - 1 ? 'disabled' : ''}>▼</button>
+        <button class="g-del" onclick="deleteGalleryItem(${i})">حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function moveGalleryItem(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= galleryData.length) return;
+  [galleryData[i], galleryData[j]] = [galleryData[j], galleryData[i]];
+  renderGalleryGrid();
+  try {
+    await Promise.all(galleryData.map((p, idx) =>
+      sb.from('gallery_photos').update({ sort_order: idx }).eq('id', p.id)
+    ));
+  } catch (e) {
+    toast('خطا در ذخیره ترتیب: ' + e.message, 'error');
+  }
+}
+
+async function deleteGalleryItem(i) {
+  const photo = galleryData[i];
+  if (!confirm('این عکس حذف بشه؟')) return;
+  try {
+    if (photo.path) {
+      await sb.storage.from(GALLERY_BUCKET).remove([photo.path]);
+    }
+    const { error } = await sb.from('gallery_photos').delete().eq('id', photo.id);
+    if (error) throw error;
+    galleryData.splice(i, 1);
+    renderGalleryGrid();
+    toast('🗑️ عکس حذف شد');
+  } catch (e) {
+    toast('خطا: ' + e.message, 'error');
+  }
+}
+
+async function handleGalleryUpload(files) {
+  if (!files || !files.length) return;
+  const statusEl = document.getElementById('gallery-upload-status');
+  const input = document.getElementById('gallery-file-input');
+  let nextOrder = galleryData.length;
+  let done = 0, failed = 0;
+
+  for (const file of Array.from(files)) {
+    statusEl.textContent = `در حال آپلود ${done + failed + 1} از ${files.length}...`;
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+      const path = `photos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const { error: upErr } = await sb.storage.from(GALLERY_BUCKET).upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+      if (upErr) throw upErr;
+
+      const { data: pub } = sb.storage.from(GALLERY_BUCKET).getPublicUrl(path);
+      const url = pub.publicUrl;
+
+      const { data: inserted, error: insErr } = await sb.from('gallery_photos')
+        .insert({ url, path, sort_order: nextOrder })
+        .select()
+        .single();
+      if (insErr) throw insErr;
+
+      galleryData.push(inserted);
+      nextOrder++;
+      done++;
+    } catch (e) {
+      failed++;
+      console.error(e);
+    }
+  }
+
+  renderGalleryGrid();
+  statusEl.textContent = failed
+    ? `✅ ${done} عکس آپلود شد — ⚠️ ${failed} تا ناموفق بود (کنسول رو چک کن)`
+    : `✅ ${done} عکس با موفقیت آپلود شد`;
+  toast(failed ? 'برخی آپلودها ناموفق بودند' : '✅ عکس‌ها آپلود شدند', failed ? 'error' : 'success');
+  input.value = '';
 }
 
 // ============================================================

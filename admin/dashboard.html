@@ -668,7 +668,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <div class="toast-wrap" id="toastWrap"></div>
 
-<script>document.write('<scr'+'ipt src="config.js?t=' + Date.now() + '"></scr'+'ipt>');</script>
+
 <script>
 // ============================================================
 // INIT
@@ -696,7 +696,10 @@ window.addEventListener('unhandledrejection', function (ev) {
 
 function initSupabase() {
   if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
-    alert('config.js تنظیم نشده!');
+    fetch('config.js?debug=' + Date.now())
+      .then(r => r.text().then(t => `status ${r.status} ${r.ok ? 'OK' : 'FAIL'} — first 80 chars: ${t.slice(0, 80)}`))
+      .catch(e => 'fetch error: ' + e.message)
+      .then(info => alert('config.js تنظیم نشده!\n\nDebug:\n' + info));
     return false;
   }
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1366,7 +1369,16 @@ function insertList(type) {
 // ============================================================
 // START
 // ============================================================
-authGuard();
+// Init — load config.js dynamically first (cache-proof), then start.
+(function loadConfigThenInit() {
+  const s = document.createElement('script');
+  s.src = 'config.js?t=' + Date.now();
+  s.onload = authGuard;
+  s.onerror = function () {
+    alert('config.js failed to load (network error or wrong path)');
+  };
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>

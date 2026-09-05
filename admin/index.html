@@ -209,7 +209,7 @@ input::placeholder{color:var(--text-muted)}
   </div>
 </div>
 
-<script>document.write('<scr'+'ipt src="config.js?t=' + Date.now() + '"></scr'+'ipt>');</script>
+
 <script>
 // ============================================================
 // Supabase Init — credentials از config.js میان
@@ -355,8 +355,21 @@ for (let i = 0; i < 30; i++) {
   container.appendChild(s);
 }
 
-// Init
-checkSession();
+// Init — load config.js dynamically first (cache-proof), then start.
+// Using createElement + onload guarantees config.js has fully executed
+// before checkSession()/initSupabase() ever run, regardless of any
+// document.write timing quirks in the browser.
+(function loadConfigThenInit() {
+  const s = document.createElement('script');
+  s.src = 'config.js?t=' + Date.now();
+  s.onload = checkSession;
+  s.onerror = function () {
+    const notice = document.getElementById('configNotice');
+    notice.style.display = 'block';
+    notice.innerHTML += '<br><br><span dir="ltr" style="font-family:monospace;font-size:12px;color:#f88">config.js failed to load (network error or wrong path)</span>';
+  };
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>

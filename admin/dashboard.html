@@ -679,6 +679,21 @@ let skillsData = [];
 let projectsData = [];
 let postsData = [];
 
+// Global error visibility — since this panel is often checked from
+// a phone with no dev console, surface any uncaught JS error as a toast
+// so it can be screenshotted and reported.
+window.addEventListener('error', function (ev) {
+  console.error('Uncaught error:', ev.error || ev.message);
+  try { toast('⚠️ خطای جاوااسکریپت: ' + (ev.message || 'نامشخص'), 'error'); } catch (_) {}
+});
+window.addEventListener('unhandledrejection', function (ev) {
+  console.error('Unhandled promise rejection:', ev.reason);
+  try {
+    const msg = (ev.reason && (ev.reason.message || JSON.stringify(ev.reason))) || 'نامشخص';
+    toast('⚠️ خطای async: ' + msg, 'error');
+  } catch (_) {}
+});
+
 function initSupabase() {
   if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
     alert('config.js تنظیم نشده!');
@@ -773,15 +788,34 @@ async function loadDashboard() {
       sb.from('blog_posts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     ]);
 
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') console.error('dashboard query', i, 'failed:', r.reason);
+      else if (r.value?.error) console.error('dashboard query', i, 'error:', r.value.error);
+    });
+
     document.getElementById('stat-projects').textContent = results[0].value?.count ?? '—';
     document.getElementById('stat-posts').textContent = results[1].value?.count ?? '—';
     document.getElementById('stat-published').textContent = results[2].value?.count ?? '—';
     document.getElementById('stat-drafts').textContent = results[3].value?.count ?? '—';
-    document.getElementById('db-status').textContent = '✅ Database متصل است';
-  } catch(e) {
-    document.getElementById('db-status').textContent = '⚠️ Database هنوز راه‌اندازی نشده — SQL را اجرا کنید';
+
+    const anyFailed = results.some(r => r.status === 'rejected' || r.value?.error);
+    document.getElementById('db-status').textContent = anyFailed
+      ? '⚠️ بعضی جداول در دسترس نیستن (کنسول رو چک کن)'
+      : '✅ Database متصل است';
+  } catch (e) {
+    console.error('loadDashboard fatal error:', e);
+    document.getElementById('db-status').textContent = '⚠️ خطا: ' + (e.message || 'نامشخص');
   }
 }
+
+// Safety net: if for any reason loadDashboard() never finishes updating
+// this text (e.g. it never even got called), don't leave it spinning forever.
+setTimeout(() => {
+  const el = document.getElementById('db-status');
+  if (el && el.textContent.indexOf('در حال بررسی') !== -1) {
+    el.textContent = '⚠️ بارگذاری کامل نشد — صفحه رو رفرش کن';
+  }
+}, 8000);
 
 // ============================================================
 // SITE SETTINGS
@@ -929,7 +963,8 @@ async function loadGallery() {
     galleryData = data || [];
     renderGalleryGrid();
   } catch (e) {
-    grid.innerHTML = `<div class="gallery-empty">⚠️ جدول gallery_photos پیدا نشد.<br>اول باید SQL راه‌اندازی رو تو Supabase اجرا کنی (فایل SETUP.sql).</div>`;
+    console.error('loadGallery error:', e);
+    grid.innerHTML = `<div class="gallery-empty">⚠️ خطا در خواندن جدول gallery_photos:<br><span dir="ltr" style="font-family:monospace;font-size:12px;color:#fca5a5">${(e && (e.message || e.error_description || JSON.stringify(e))) || 'نامشخص'}</span><br><br>اگه این پیام «relation does not exist» بود یعنی SQL درست اجرا نشده. اگه چیز دیگه‌ای بود (مثلاً permission) به سازنده‌ی سایت نشونش بده.</div>`;
   }
 }
 

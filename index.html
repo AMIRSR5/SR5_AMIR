@@ -682,6 +682,8 @@ footer span{color:var(--gold);font-weight:600}
 .chat-send-btn{background:var(--gold);color:#000;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:15px}
 @media(max-width:480px){
   .chat-panel{width:100vw;height:100vh;max-height:100vh;border-radius:0;bottom:0;right:0}
+  .chat-panel-header{padding-top:calc(14px + env(safe-area-inset-top));}
+  .chat-input-row{padding-bottom:calc(10px + env(safe-area-inset-bottom));}
 }
 </style>
 </head>
@@ -1865,6 +1867,7 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
   let mediaRecorder = null;
   let recordedChunks = [];
   let isPanelOpen = false;
+  const renderedMsgIds = new Set();
 
   function tgUrl(method) {
     return `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`;
@@ -1965,7 +1968,15 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
     document.getElementById('chat-panel').classList.toggle('show', open);
     document.getElementById('chat-unread-dot').style.display = 'none';
     if (open && conversationId) {
-      loadChatMessages();
+      loadChatMessages().then(() => {
+        const box = document.getElementById('chat-messages');
+        if (!box.children.length) {
+          const welcome = document.createElement('div');
+          welcome.className = 'chat-msg admin';
+          welcome.innerHTML = '<div>سلام 👋 پیامتو بنویس، به‌زودی جوابتو می‌دم.</div>';
+          box.appendChild(welcome);
+        }
+      });
       subscribeToChat();
     }
   };
@@ -1997,7 +2008,7 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
         .order('created_at');
       if (error) throw error;
       box.innerHTML = '';
-      (data || []).forEach(m => box.appendChild(renderMessage(m)));
+      (data || []).forEach(m => { renderedMsgIds.add(m.id); box.appendChild(renderMessage(m)); });
       box.scrollTop = box.scrollHeight;
     } catch (e) {
       console.error('loadChatMessages error:', e);
@@ -2011,6 +2022,8 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
         event: 'INSERT', schema: 'public', table: 'chat_messages',
         filter: 'conversation_id=eq.' + conversationId
       }, (payload) => {
+        if (renderedMsgIds.has(payload.new.id)) return;
+        renderedMsgIds.add(payload.new.id);
         const box = document.getElementById('chat-messages');
         box.appendChild(renderMessage(payload.new));
         box.scrollTop = box.scrollHeight;
@@ -2027,14 +2040,28 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
     if (!text || !conversationId) return;
     input.value = '';
     try {
-      await chatSb.from('chat_messages').insert({
+      const { data, error } = await chatSb.from('chat_messages').insert({
         conversation_id: conversationId, sender: 'visitor', msg_type: 'text', content: text
-      });
-      await chatSb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
-      const name = document.getElementById('chat-name-input').value || 'کاربر سایت';
+      }).select().single();
+      if (error) throw error;
+      renderedMsgIds.add(data.id);
+
+      // Render immediately — don't rely solely on the realtime event,
+      // in case Realtime isn't enabled for this table yet.
+      const box = document.getElementById('chat-messages');
+      box.appendChild(renderMessage(data));
+      box.scrollTop = box.scrollHeight;
+
+      chatSb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId).then(() => {});
       notifyTelegramText(`✉️ پیام جدید در چت سایت:\n${text}`);
     } catch (e) {
-      console.error(e);
+      console.error('sendChatText error:', e);
+      const box = document.getElementById('chat-messages');
+      const errDiv = document.createElement('div');
+      errDiv.style.cssText = 'color:#ff8a8a;font-size:11px;text-align:center;direction:ltr';
+      errDiv.textContent = '⚠️ ارسال نشد: ' + (e.message || 'خطای نامشخص');
+      box.appendChild(errDiv);
+      box.scrollTop = box.scrollHeight;
     }
   };
 
@@ -2048,13 +2075,21 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
       const { error: upErr } = await chatSb.storage.from('chat-media').upload(path, file);
       if (upErr) throw upErr;
       const { data: pub } = chatSb.storage.from('chat-media').getPublicUrl(path);
-      await chatSb.from('chat_messages').insert({
+      const { data: msgRow, error: insErr } = await chatSb.from('chat_messages').insert({
         conversation_id: conversationId, sender: 'visitor', msg_type: kind, media_url: pub.publicUrl, media_path: path
-      });
-      await chatSb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+      }).select().single();
+      if (insErr) throw insErr;
+
+      renderedMsgIds.add(msgRow.id);
+      const box = document.getElementById('chat-messages');
+      box.appendChild(renderMessage(msgRow));
+      box.scrollTop = box.scrollHeight;
+
+      chatSb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId).then(() => {});
       notifyTelegramMedia(kind, pub.publicUrl, '📎 فایل جدید در چت سایت');
     } catch (e) {
-      alert('خطا در ارسال فایل: ' + e.message);
+      console.error('handleChatFileUpload error:', e);
+      alert('خطا در ارسال فایل: ' + (e.message || 'نامشخص'));
     }
     document.getElementById('chat-file-input').value = '';
   };

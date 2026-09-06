@@ -677,6 +677,9 @@ footer span{color:var(--gold);font-weight:600}
 .chat-msg.visitor{align-self:flex-end;background:linear-gradient(135deg,rgba(80,220,150,.35),rgba(40,150,100,.35));color:#eafff2;border-bottom-left-radius:4px}
 .chat-msg.admin{align-self:flex-start;background:rgba(255,255,255,.08);color:#f0f0f0;border-bottom-right-radius:4px}
 .chat-msg:active{filter:brightness(1.15)}
+.chat-reply-hint{position:absolute;top:-7px;background:rgba(0,0,0,.55);color:#5fe89a;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.chat-msg.visitor .chat-reply-hint{left:-7px}
+.chat-msg.admin .chat-reply-hint{right:-7px}
 .chat-msg img,.chat-msg video{max-width:100%;border-radius:8px;display:block;margin-top:4px}
 .chat-msg audio{width:220px;margin-top:4px}
 .chat-msg-time{font-size:9.5px;opacity:.65;margin-top:3px;direction:ltr;text-align:left}
@@ -688,7 +691,7 @@ footer span{color:var(--gold);font-weight:600}
 .chat-input-row{display:flex;align-items:center;gap:6px;padding:10px;background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.08);position:relative;z-index:2}
 .chat-icon-btn{background:none;border:none;color:#5fe89a;font-size:19px;cursor:pointer;padding:6px;flex-shrink:0}
 .chat-icon-btn.recording{color:#ff4d4d;animation:pulseDot .8s infinite}
-.chat-input-row input[type=text]{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:10px 14px;color:#fff;font-family:'Vazirmatn',sans-serif;font-size:13px}
+.chat-input-row input[type=text]{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:10px 14px;color:#fff;font-family:'Vazirmatn',sans-serif;font-size:16px}
 .chat-input-row input[type=text]:focus{outline:none;border-color:var(--gold)}
 .chat-send-btn{background:var(--gold);color:#000;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:15px}
 @media(max-width:480px){
@@ -2013,7 +2016,8 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
       inner += `<audio src="${msg.media_url}" controls></audio>`;
     }
     const time = new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-    wrap.innerHTML = inner + `<div class="chat-msg-time">${time}</div>`;
+    wrap.style.position = 'relative';
+    wrap.innerHTML = '<span class="chat-reply-hint">↩</span>' + inner + `<div class="chat-msg-time">${time}</div>`;
     wrap.onclick = () => setReplyTarget(msg);
     return wrap;
   }
@@ -2143,21 +2147,42 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
       btn.classList.remove('recording');
       return;
     }
+    if (typeof MediaRecorder === 'undefined') {
+      alert('ضبط صدا رو این مرورگر پشتیبانی نمی‌شه.');
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       recordedChunks = [];
-      mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
+
+      // iOS Safari doesn't support 'audio/webm' — detect a format the device actually supports.
+      const candidates = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+      const mimeType = candidates.find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+
+      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      const usedType = mediaRecorder.mimeType || mimeType || 'audio/mp4';
+      const ext = usedType.includes('mp4') ? 'm4a' : usedType.includes('ogg') ? 'ogg' : 'webm';
+
+      mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) recordedChunks.push(e.data); };
+      mediaRecorder.onerror = (e) => {
+        console.error('MediaRecorder error:', e.error);
+        alert('خطا در ضبط صدا: ' + (e.error ? e.error.message : 'نامشخص'));
+      };
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-        const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+        if (!recordedChunks.length) {
+          alert('چیزی ضبط نشد، دوباره امتحان کن.');
+          return;
+        }
+        const blob = new Blob(recordedChunks, { type: usedType });
+        const file = new File([blob], `voice-${Date.now()}.${ext}`, { type: usedType });
         await window.handleChatFileUpload([file]);
       };
       mediaRecorder.start();
       btn.classList.add('recording');
     } catch (e) {
-      alert('دسترسی به میکروفون داده نشد.');
+      console.error('mic error:', e);
+      alert('دسترسی به میکروفون داده نشد: ' + (e.message || 'نامشخص'));
     }
   };
 

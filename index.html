@@ -659,27 +659,38 @@ footer span{color:var(--gold);font-weight:600}
 .chat-start-btn:hover{background:var(--gold-light)}
 .chat-close{position:absolute;top:14px;left:14px;background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer}
 
-.chat-panel{position:fixed;bottom:0;right:0;width:380px;max-width:100vw;height:560px;max-height:88vh;background:#050805;border:1px solid rgba(0,255,120,.2);border-radius:16px 16px 0 0;z-index:9999;display:none;flex-direction:column;overflow:hidden;box-shadow:0 -10px 50px rgba(0,0,0,.6);font-family:'Courier New',monospace}
+.chat-panel{position:fixed;bottom:0;right:0;width:380px;max-width:100vw;height:600px;max-height:90vh;border-radius:18px 18px 0 0;z-index:9999;display:none;flex-direction:column;overflow:hidden;box-shadow:0 -10px 50px rgba(0,0,0,.6);
+  background:radial-gradient(circle at 20% 10%,#0f2e22 0%,#081912 40%,#050d09 100%);}
 .chat-panel.show{display:flex}
-.chat-panel::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,120,.02) 0px,rgba(0,255,120,.02) 1px,transparent 1px,transparent 3px);z-index:1}
-.chat-panel-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#0a0f0a;border-bottom:1px solid rgba(0,255,120,.15);position:relative;z-index:2}
-.chat-panel-title{color:var(--gold);font-weight:700;font-size:14px;letter-spacing:1px}
-.chat-panel-status{color:#5fff9f;font-size:11px;display:flex;align-items:center;gap:5px;margin-top:2px}
-.dot-online{width:7px;height:7px;border-radius:50%;background:#5fff9f;box-shadow:0 0 6px #5fff9f;animation:pulseDot 1.6s infinite}
+.chat-panel::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:radial-gradient(ellipse at 80% 90%,rgba(60,220,140,.15),transparent 55%),radial-gradient(ellipse at 10% 100%,rgba(60,220,140,.08),transparent 40%);z-index:1}
+.chat-panel-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:2}
+.chat-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.chat-panel-titlewrap{flex:1}
+.chat-panel-title{color:#fff;font-weight:700;font-size:14px;font-family:'Vazirmatn',sans-serif}
+.chat-panel-status{color:#5fe89a;font-size:11px;display:flex;align-items:center;gap:5px;margin-top:2px;font-family:'Vazirmatn',sans-serif}
+.dot-online{width:7px;height:7px;border-radius:50%;background:#5fe89a;box-shadow:0 0 6px #5fe89a;animation:pulseDot 1.6s infinite}
 @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+.chat-date-divider{align-self:center;background:rgba(255,255,255,.08);color:#bcbcbc;font-size:11px;padding:4px 12px;border-radius:20px;margin:6px auto;font-family:'Vazirmatn',sans-serif}
 .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2}
-.chat-msg{max-width:78%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.6;word-wrap:break-word}
-.chat-msg.visitor{align-self:flex-end;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.35);color:#f5e6bd}
-.chat-msg.admin{align-self:flex-start;background:rgba(0,255,120,.08);border:1px solid rgba(0,255,120,.25);color:#c8ffe0}
+.chat-msg{max-width:78%;padding:9px 13px 7px;border-radius:14px;font-size:13.5px;line-height:1.65;word-wrap:break-word;position:relative;font-family:'Vazirmatn',sans-serif;cursor:pointer}
+.chat-msg.visitor{align-self:flex-end;background:linear-gradient(135deg,rgba(80,220,150,.35),rgba(40,150,100,.35));color:#eafff2;border-bottom-left-radius:4px}
+.chat-msg.admin{align-self:flex-start;background:rgba(255,255,255,.08);color:#f0f0f0;border-bottom-right-radius:4px}
+.chat-msg:active{filter:brightness(1.15)}
 .chat-msg img,.chat-msg video{max-width:100%;border-radius:8px;display:block;margin-top:4px}
 .chat-msg audio{width:220px;margin-top:4px}
-.chat-msg-time{font-size:9px;opacity:.5;margin-top:4px;direction:ltr;text-align:left}
-.chat-input-row{display:flex;align-items:center;gap:6px;padding:10px;background:#0a0f0a;border-top:1px solid rgba(0,255,120,.15);position:relative;z-index:2}
-.chat-icon-btn{background:none;border:none;color:#5fff9f;font-size:18px;cursor:pointer;padding:6px;flex-shrink:0}
+.chat-msg-time{font-size:9.5px;opacity:.65;margin-top:3px;direction:ltr;text-align:left}
+.chat-msg-reply-quote{background:rgba(0,0,0,.2);border-right:3px solid var(--gold);border-radius:6px;padding:5px 8px;margin-bottom:5px;font-size:11.5px;opacity:.85;max-height:36px;overflow:hidden}
+.chat-reply-bar{display:none;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.08);position:relative;z-index:2;font-family:'Vazirmatn',sans-serif}
+.chat-reply-bar.show{display:flex}
+.chat-reply-bar-text{font-size:12px;color:#cde;border-right:3px solid var(--gold);padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.chat-reply-cancel{background:none;border:none;color:#aaa;font-size:16px;cursor:pointer;padding:0 4px}
+.chat-input-row{display:flex;align-items:center;gap:6px;padding:10px;background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.08);position:relative;z-index:2}
+.chat-icon-btn{background:none;border:none;color:#5fe89a;font-size:19px;cursor:pointer;padding:6px;flex-shrink:0}
 .chat-icon-btn.recording{color:#ff4d4d;animation:pulseDot .8s infinite}
-.chat-input-row input[type=text]{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:9px 14px;color:var(--text);font-family:'Vazirmatn',sans-serif;font-size:13px}
+.chat-input-row input[type=text]{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:10px 14px;color:#fff;font-family:'Vazirmatn',sans-serif;font-size:13px}
 .chat-input-row input[type=text]:focus{outline:none;border-color:var(--gold)}
-.chat-send-btn{background:var(--gold);color:#000;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:15px}
+.chat-send-btn{background:var(--gold);color:#000;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:15px}
 @media(max-width:480px){
   .chat-panel{width:100vw;height:100vh;max-height:100vh;border-radius:0;bottom:0;right:0}
   .chat-panel-header{padding-top:calc(14px + env(safe-area-inset-top));}
@@ -1837,13 +1848,20 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
 
 <div class="chat-panel" id="chat-panel">
   <div class="chat-panel-header">
-    <div>
+    <button class="chat-close" onclick="toggleChatPanel(false)" style="position:static;font-size:20px;color:#fff">→</button>
+    <div class="chat-avatar">🤖</div>
+    <div class="chat-panel-titlewrap">
       <div class="chat-panel-title">AMIR_SR5</div>
-      <div class="chat-panel-status"><span class="dot-online"></span> پاسخ‌گو</div>
+      <div class="chat-panel-status"><span class="dot-online"></span> آنلاین</div>
     </div>
-    <button class="chat-close" onclick="toggleChatPanel(false)">✕</button>
   </div>
-  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-date-divider">امروز</div>
+  </div>
+  <div class="chat-reply-bar" id="chat-reply-bar">
+    <div class="chat-reply-bar-text" id="chat-reply-bar-text"></div>
+    <button class="chat-reply-cancel" onclick="cancelReply()">✕</button>
+  </div>
   <div class="chat-input-row">
     <input type="file" id="chat-file-input" accept="image/*,video/*,audio/*" style="display:none" onchange="handleChatFileUpload(this.files)">
     <button class="chat-icon-btn" onclick="document.getElementById('chat-file-input').click()" title="ارسال فایل">📎</button>
@@ -1868,6 +1886,7 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
   let recordedChunks = [];
   let isPanelOpen = false;
   const renderedMsgIds = new Set();
+  let replyingTo = null;
 
   function tgUrl(method) {
     return `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`;
@@ -1875,25 +1894,21 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
 
   async function notifyTelegramText(text) {
     try {
-      await fetch(tgUrl('sendMessage'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
-      });
+      const url = tgUrl('sendMessage') + '?chat_id=' + encodeURIComponent(TELEGRAM_CHAT_ID) + '&text=' + encodeURIComponent(text);
+      await fetch(url);
     } catch (e) { console.error('telegram text notify failed', e); }
   }
 
-  async function notifyTelegramMedia(kind, url, caption) {
+  async function notifyTelegramMedia(kind, mediaUrl, caption) {
     const methodMap = { image: 'sendPhoto', video: 'sendVideo', audio: 'sendAudio' };
     const fieldMap = { image: 'photo', video: 'video', audio: 'audio' };
     const method = methodMap[kind] || 'sendDocument';
     const field = fieldMap[kind] || 'document';
     try {
-      await fetch(tgUrl(method), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, [field]: url, caption })
-      });
+      const url = tgUrl(method) + '?chat_id=' + encodeURIComponent(TELEGRAM_CHAT_ID)
+        + '&' + field + '=' + encodeURIComponent(mediaUrl)
+        + '&caption=' + encodeURIComponent(caption || '');
+      await fetch(url);
     } catch (e) { console.error('telegram media notify failed', e); }
   }
 
@@ -1985,19 +2000,44 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
     const wrap = document.createElement('div');
     wrap.className = 'chat-msg ' + (msg.sender === 'admin' ? 'admin' : 'visitor');
     let inner = '';
+    if (msg.reply_to_snippet) {
+      inner += `<div class="chat-msg-reply-quote">${msg.reply_to_snippet.replace(/</g, '&lt;')}</div>`;
+    }
     if (msg.msg_type === 'text') {
-      inner = `<div>${(msg.content || '').replace(/</g, '&lt;')}</div>`;
+      inner += `<div>${(msg.content || '').replace(/</g, '&lt;')}</div>`;
     } else if (msg.msg_type === 'image') {
-      inner = `<img src="${msg.media_url}" alt="عکس">`;
+      inner += `<img src="${msg.media_url}" alt="عکس">`;
     } else if (msg.msg_type === 'video') {
-      inner = `<video src="${msg.media_url}" controls></video>`;
+      inner += `<video src="${msg.media_url}" controls></video>`;
     } else if (msg.msg_type === 'audio') {
-      inner = `<audio src="${msg.media_url}" controls></audio>`;
+      inner += `<audio src="${msg.media_url}" controls></audio>`;
     }
     const time = new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
     wrap.innerHTML = inner + `<div class="chat-msg-time">${time}</div>`;
+    wrap.onclick = () => setReplyTarget(msg);
     return wrap;
   }
+
+  function snippetFor(msg) {
+    if (msg.msg_type === 'text') return (msg.content || '').slice(0, 60);
+    if (msg.msg_type === 'image') return '📷 عکس';
+    if (msg.msg_type === 'video') return '🎥 ویدیو';
+    if (msg.msg_type === 'audio') return '🎤 ویس';
+    return '';
+  }
+
+  window.setReplyTarget = function (msg) {
+    replyingTo = { id: msg.id, snippet: snippetFor(msg) };
+    const bar = document.getElementById('chat-reply-bar');
+    document.getElementById('chat-reply-bar-text').textContent = replyingTo.snippet;
+    bar.classList.add('show');
+    document.getElementById('chat-text-input').focus();
+  };
+
+  window.cancelReply = function () {
+    replyingTo = null;
+    document.getElementById('chat-reply-bar').classList.remove('show');
+  };
 
   async function loadChatMessages() {
     const box = document.getElementById('chat-messages');
@@ -2039,9 +2079,11 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
     const text = input.value.trim();
     if (!text || !conversationId) return;
     input.value = '';
+    const replyData = replyingTo ? { reply_to_id: replyingTo.id, reply_to_snippet: replyingTo.snippet } : {};
+    cancelReply();
     try {
       const { data, error } = await chatSb.from('chat_messages').insert({
-        conversation_id: conversationId, sender: 'visitor', msg_type: 'text', content: text
+        conversation_id: conversationId, sender: 'visitor', msg_type: 'text', content: text, ...replyData
       }).select().single();
       if (error) throw error;
       renderedMsgIds.add(data.id);

@@ -630,6 +630,7 @@ footer span{color:var(--gold);font-weight:600}
   section{padding:88px 1rem 3rem}
   .about-img{max-height:320px}
   .skill-modal{padding:2rem 1.25rem}
+/* ============ Live Chat Widget ============ */
 .music-prompt{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;pointer-events:none;z-index:9999;background:rgba(10,10,10,.96);border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .4s ease,transform .4s ease;max-width:92vw}
 .music-prompt.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
 .music-prompt-text{color:#eee;font-size:13px;white-space:nowrap}
@@ -640,6 +641,47 @@ footer span{color:var(--gold);font-weight:600}
 @media(max-width:480px){
   .music-prompt{flex-direction:column;gap:8px;padding:12px 14px}
   .music-prompt-text{white-space:normal;text-align:center;font-size:12px}
+}
+#chat-matrix{position:fixed;bottom:24px;right:24px;z-index:9997;pointer-events:none;display:none;border-radius:50%}
+.chat-bubble{position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dark));border:none;cursor:pointer;z-index:9998;display:none;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 24px rgba(201,168,76,.4);animation:chatPop .5s cubic-bezier(.34,1.56,.64,1)}
+.chat-bubble:hover{transform:scale(1.08)}
+.chat-bubble .dot-unread{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#ff4d4d;border:2px solid var(--black);display:none}
+@keyframes chatPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+
+.chat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.chat-overlay.show{display:flex}
+.chat-intake-card{background:var(--dark);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:2rem;max-width:360px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.chat-intake-title{color:var(--gold);font-size:20px;font-weight:700;margin-bottom:6px}
+.chat-intake-sub{color:var(--text-muted);font-size:13px;margin-bottom:20px}
+.chat-intake-card input{width:100%;background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 14px;color:var(--text);font-family:inherit;margin-bottom:12px;font-size:14px}
+.chat-intake-card input:focus{outline:none;border-color:var(--gold)}
+.chat-start-btn{width:100%;background:var(--gold);color:#000;border:none;border-radius:8px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-top:4px}
+.chat-start-btn:hover{background:var(--gold-light)}
+.chat-close{position:absolute;top:14px;left:14px;background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer}
+
+.chat-panel{position:fixed;bottom:0;right:0;width:380px;max-width:100vw;height:560px;max-height:88vh;background:#050805;border:1px solid rgba(0,255,120,.2);border-radius:16px 16px 0 0;z-index:9999;display:none;flex-direction:column;overflow:hidden;box-shadow:0 -10px 50px rgba(0,0,0,.6);font-family:'Courier New',monospace}
+.chat-panel.show{display:flex}
+.chat-panel::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,120,.02) 0px,rgba(0,255,120,.02) 1px,transparent 1px,transparent 3px);z-index:1}
+.chat-panel-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#0a0f0a;border-bottom:1px solid rgba(0,255,120,.15);position:relative;z-index:2}
+.chat-panel-title{color:var(--gold);font-weight:700;font-size:14px;letter-spacing:1px}
+.chat-panel-status{color:#5fff9f;font-size:11px;display:flex;align-items:center;gap:5px;margin-top:2px}
+.dot-online{width:7px;height:7px;border-radius:50%;background:#5fff9f;box-shadow:0 0 6px #5fff9f;animation:pulseDot 1.6s infinite}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2}
+.chat-msg{max-width:78%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.6;word-wrap:break-word}
+.chat-msg.visitor{align-self:flex-end;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.35);color:#f5e6bd}
+.chat-msg.admin{align-self:flex-start;background:rgba(0,255,120,.08);border:1px solid rgba(0,255,120,.25);color:#c8ffe0}
+.chat-msg img,.chat-msg video{max-width:100%;border-radius:8px;display:block;margin-top:4px}
+.chat-msg audio{width:220px;margin-top:4px}
+.chat-msg-time{font-size:9px;opacity:.5;margin-top:4px;direction:ltr;text-align:left}
+.chat-input-row{display:flex;align-items:center;gap:6px;padding:10px;background:#0a0f0a;border-top:1px solid rgba(0,255,120,.15);position:relative;z-index:2}
+.chat-icon-btn{background:none;border:none;color:#5fff9f;font-size:18px;cursor:pointer;padding:6px;flex-shrink:0}
+.chat-icon-btn.recording{color:#ff4d4d;animation:pulseDot .8s infinite}
+.chat-input-row input[type=text]{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:9px 14px;color:var(--text);font-family:'Vazirmatn',sans-serif;font-size:13px}
+.chat-input-row input[type=text]:focus{outline:none;border-color:var(--gold)}
+.chat-send-btn{background:var(--gold);color:#000;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:15px}
+@media(max-width:480px){
+  .chat-panel{width:100vw;height:100vh;max-height:100vh;border-radius:0;bottom:0;right:0}
 }
 </style>
 </head>
@@ -1772,6 +1814,286 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
     <button class="music-btn-no" onclick="musicPromptChoice(false)">خیر</button>
   </div>
 </div>
+
+<!-- Live Chat Widget -->
+<canvas id="chat-matrix" width="72" height="72"></canvas>
+<button id="chat-bubble" class="chat-bubble" onclick="openChatWidget()" aria-label="چت آنلاین">
+  <span>💬</span>
+  <span class="dot-unread" id="chat-unread-dot"></span>
+</button>
+
+<div class="chat-overlay" id="chat-intake-overlay">
+  <div class="chat-intake-card">
+    <button class="chat-close" onclick="closeIntake()">✕</button>
+    <div class="chat-intake-title">شروع گفتگو</div>
+    <div class="chat-intake-sub">قبل از شروع، خودتو معرفی کن تا بتونم جوابتو بدم</div>
+    <input type="text" id="chat-name-input" placeholder="اسم و فامیل">
+    <input type="tel" id="chat-phone-input" placeholder="شماره تماس">
+    <button class="chat-start-btn" onclick="startChatConversation()">شروع گفتگو ←</button>
+  </div>
+</div>
+
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-panel-header">
+    <div>
+      <div class="chat-panel-title">AMIR_SR5</div>
+      <div class="chat-panel-status"><span class="dot-online"></span> پاسخ‌گو</div>
+    </div>
+    <button class="chat-close" onclick="toggleChatPanel(false)">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-row">
+    <input type="file" id="chat-file-input" accept="image/*,video/*,audio/*" style="display:none" onchange="handleChatFileUpload(this.files)">
+    <button class="chat-icon-btn" onclick="document.getElementById('chat-file-input').click()" title="ارسال فایل">📎</button>
+    <button class="chat-icon-btn" id="chat-mic-btn" onclick="toggleVoiceRecording()" title="ضبط ویس">🎙️</button>
+    <input type="text" id="chat-text-input" placeholder="پیامت رو بنویس..." onkeydown="if(event.key==='Enter')sendChatText()">
+    <button class="chat-send-btn" onclick="sendChatText()">➤</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const CHAT_SUPABASE_URL = 'https://rsyglfecaxbuqxfcwtpl.supabase.co';
+  const CHAT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeWdsZmVjYXhidXF4ZmN3dHBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyMTQ4NDcsImV4cCI6MjEwMTc5MDg0N30._cYxGmD0sjlIEczRXtxnc5o4UyYVuVWmMqRkr2Wvqmk';
+  const chatSb = supabase.createClient(CHAT_SUPABASE_URL, CHAT_SUPABASE_ANON_KEY);
+
+  const TELEGRAM_BOT_TOKEN = '8689295323:AAGFHCWKrX8IspOFlsAOABd2Ocd4jnPF9d4';
+  const TELEGRAM_CHAT_ID = '6319760337';
+
+  let conversationId = localStorage.getItem('sr5_chat_conv_id') || null;
+  let chatChannel = null;
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let isPanelOpen = false;
+
+  function tgUrl(method) {
+    return `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`;
+  }
+
+  async function notifyTelegramText(text) {
+    try {
+      await fetch(tgUrl('sendMessage'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
+      });
+    } catch (e) { console.error('telegram text notify failed', e); }
+  }
+
+  async function notifyTelegramMedia(kind, url, caption) {
+    const methodMap = { image: 'sendPhoto', video: 'sendVideo', audio: 'sendAudio' };
+    const fieldMap = { image: 'photo', video: 'video', audio: 'audio' };
+    const method = methodMap[kind] || 'sendDocument';
+    const field = fieldMap[kind] || 'document';
+    try {
+      await fetch(tgUrl(method), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, [field]: url, caption })
+      });
+    } catch (e) { console.error('telegram media notify failed', e); }
+  }
+
+  // ── Matrix reveal animation for the bubble ──────────────────
+  function playMatrixReveal() {
+    const canvas = document.getElementById('chat-matrix');
+    const bubble = document.getElementById('chat-bubble');
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    const chars = 'アイウエオカキクケコ01アミール$#@%&{}<>SR5'.split('');
+    const cols = 8;
+    const drops = new Array(cols).fill(0);
+    let frame = 0;
+    const maxFrames = 34;
+
+    const timer = setInterval(() => {
+      ctx.fillStyle = 'rgba(5,10,5,0.35)';
+      ctx.fillRect(0, 0, 72, 72);
+      ctx.font = '10px monospace';
+      for (let i = 0; i < cols; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillStyle = Math.random() > 0.85 ? '#E8C96A' : '#3fff8a';
+        ctx.fillText(text, i * 9, drops[i] * 9);
+        drops[i] = drops[i] > 8 && Math.random() > 0.94 ? 0 : drops[i] + 1;
+      }
+      frame++;
+      if (frame >= maxFrames) {
+        clearInterval(timer);
+        canvas.style.display = 'none';
+        bubble.style.display = 'flex';
+      }
+    }, 45);
+  }
+
+  window.openChatWidget = function () {
+    if (conversationId) {
+      toggleChatPanel(true);
+    } else {
+      document.getElementById('chat-intake-overlay').classList.add('show');
+    }
+  };
+
+  window.closeIntake = function () {
+    document.getElementById('chat-intake-overlay').classList.remove('show');
+  };
+
+  window.startChatConversation = async function () {
+    const name = document.getElementById('chat-name-input').value.trim();
+    const phone = document.getElementById('chat-phone-input').value.trim();
+    if (!name || !phone) {
+      alert('لطفاً اسم و شماره‌ت رو وارد کن');
+      return;
+    }
+    try {
+      const { data, error } = await chatSb.from('chat_conversations')
+        .insert({ visitor_name: name, visitor_phone: phone })
+        .select()
+        .single();
+      if (error) throw error;
+      conversationId = data.id;
+      localStorage.setItem('sr5_chat_conv_id', conversationId);
+      document.getElementById('chat-intake-overlay').classList.remove('show');
+      toggleChatPanel(true);
+      notifyTelegramText(`💬 گفتگوی جدید شروع شد\nنام: ${name}\nشماره: ${phone}`);
+    } catch (e) {
+      alert('خطا در شروع گفتگو: ' + e.message);
+    }
+  };
+
+  window.toggleChatPanel = function (open) {
+    isPanelOpen = open;
+    document.getElementById('chat-panel').classList.toggle('show', open);
+    document.getElementById('chat-unread-dot').style.display = 'none';
+    if (open && conversationId) {
+      loadChatMessages();
+      subscribeToChat();
+    }
+  };
+
+  function renderMessage(msg) {
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-msg ' + (msg.sender === 'admin' ? 'admin' : 'visitor');
+    let inner = '';
+    if (msg.msg_type === 'text') {
+      inner = `<div>${(msg.content || '').replace(/</g, '&lt;')}</div>`;
+    } else if (msg.msg_type === 'image') {
+      inner = `<img src="${msg.media_url}" alt="عکس">`;
+    } else if (msg.msg_type === 'video') {
+      inner = `<video src="${msg.media_url}" controls></video>`;
+    } else if (msg.msg_type === 'audio') {
+      inner = `<audio src="${msg.media_url}" controls></audio>`;
+    }
+    const time = new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    wrap.innerHTML = inner + `<div class="chat-msg-time">${time}</div>`;
+    return wrap;
+  }
+
+  async function loadChatMessages() {
+    const box = document.getElementById('chat-messages');
+    try {
+      const { data, error } = await chatSb.from('chat_messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at');
+      if (error) throw error;
+      box.innerHTML = '';
+      (data || []).forEach(m => box.appendChild(renderMessage(m)));
+      box.scrollTop = box.scrollHeight;
+    } catch (e) {
+      console.error('loadChatMessages error:', e);
+    }
+  }
+
+  function subscribeToChat() {
+    if (chatChannel) return;
+    chatChannel = chatSb.channel('chat-' + conversationId)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'chat_messages',
+        filter: 'conversation_id=eq.' + conversationId
+      }, (payload) => {
+        const box = document.getElementById('chat-messages');
+        box.appendChild(renderMessage(payload.new));
+        box.scrollTop = box.scrollHeight;
+        if (!isPanelOpen && payload.new.sender === 'admin') {
+          document.getElementById('chat-unread-dot').style.display = 'block';
+        }
+      })
+      .subscribe();
+  }
+
+  window.sendChatText = async function () {
+    const input = document.getElementById('chat-text-input');
+    const text = input.value.trim();
+    if (!text || !conversationId) return;
+    input.value = '';
+    try {
+      await chatSb.from('chat_messages').insert({
+        conversation_id: conversationId, sender: 'visitor', msg_type: 'text', content: text
+      });
+      await chatSb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+      const name = document.getElementById('chat-name-input').value || 'کاربر سایت';
+      notifyTelegramText(`✉️ پیام جدید در چت سایت:\n${text}`);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  window.handleChatFileUpload = async function (files) {
+    if (!files || !files.length || !conversationId) return;
+    const file = files[0];
+    const kind = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'audio';
+    try {
+      const ext = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const path = `visitor/${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await chatSb.storage.from('chat-media').upload(path, file);
+      if (upErr) throw upErr;
+      const { data: pub } = chatSb.storage.from('chat-media').getPublicUrl(path);
+      await chatSb.from('chat_messages').insert({
+        conversation_id: conversationId, sender: 'visitor', msg_type: kind, media_url: pub.publicUrl, media_path: path
+      });
+      await chatSb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+      notifyTelegramMedia(kind, pub.publicUrl, '📎 فایل جدید در چت سایت');
+    } catch (e) {
+      alert('خطا در ارسال فایل: ' + e.message);
+    }
+    document.getElementById('chat-file-input').value = '';
+  };
+
+  window.toggleVoiceRecording = async function () {
+    const btn = document.getElementById('chat-mic-btn');
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      btn.classList.remove('recording');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+        const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+        await window.handleChatFileUpload([file]);
+      };
+      mediaRecorder.start();
+      btn.classList.add('recording');
+    } catch (e) {
+      alert('دسترسی به میکروفون داده نشد.');
+    }
+  };
+
+  // Reveal the bubble shortly after page load with the matrix effect.
+  setTimeout(playMatrixReveal, 1800);
+
+  // Returning visitor: subscribe right away so the unread dot can light up
+  // even before they reopen the panel.
+  if (conversationId) {
+    subscribeToChat();
+  }
+})();
+</script>
 
 </body>
 </html>

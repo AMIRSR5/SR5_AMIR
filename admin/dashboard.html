@@ -731,6 +731,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button class="btn btn-ghost" onclick="closeChatThread()">✕ بستن</button>
   </div>
   <div class="chat-thread-messages" id="chat-thread-messages"></div>
+  <div class="chat-reply-bar" id="admin-reply-bar" style="display:none;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,0.05);border-top:1px solid rgba(255,255,255,0.08)">
+    <div id="admin-reply-bar-text" style="font-size:12px;color:#cde;border-right:3px solid var(--gold);padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"></div>
+    <button onclick="cancelAdminReply()" style="background:none;border:none;color:#aaa;font-size:16px;cursor:pointer">✕</button>
+  </div>
   <div class="chat-thread-input">
     <input type="file" id="chat-thread-file-input" accept="image/*,video/*,audio/*" style="display:none" onchange="handleAdminChatFileUpload(this.files)">
     <button onclick="document.getElementById('chat-thread-file-input').click()" title="ارسال فایل">📎</button>
@@ -1273,26 +1277,54 @@ function renderConvList() {
   `).join('');
 }
 
+let adminReplyingTo = null;
+
+function adminSnippetFor(msg) {
+  if (msg.msg_type === 'text') return (msg.content || '').slice(0, 60);
+  if (msg.msg_type === 'image') return '📷 عکس';
+  if (msg.msg_type === 'video') return '🎥 ویدیو';
+  if (msg.msg_type === 'audio') return '🎤 ویس';
+  return '';
+}
+
+window.setAdminReplyTarget = function (msg) {
+  adminReplyingTo = { id: msg.id, snippet: adminSnippetFor(msg) };
+  document.getElementById('admin-reply-bar-text').textContent = adminReplyingTo.snippet;
+  document.getElementById('admin-reply-bar').style.display = 'flex';
+  document.getElementById('chat-thread-text-input').focus();
+};
+
+window.cancelAdminReply = function () {
+  adminReplyingTo = null;
+  document.getElementById('admin-reply-bar').style.display = 'none';
+};
+
 function renderAdminMsg(msg) {
   const wrap = document.createElement('div');
   wrap.className = 'chat-msg ' + (msg.sender === 'admin' ? 'admin' : 'visitor');
+  wrap.style.cursor = 'pointer';
   let inner = '';
+  if (msg.reply_to_snippet) {
+    inner += `<div class="chat-msg-reply-quote" style="background:rgba(0,0,0,.2);border-right:3px solid var(--gold);border-radius:6px;padding:5px 8px;margin-bottom:5px;font-size:11.5px;opacity:.85">${msg.reply_to_snippet.replace(/</g, '&lt;')}</div>`;
+  }
   if (msg.msg_type === 'text') {
-    inner = `<div>${(msg.content || '').replace(/</g, '&lt;')}</div>`;
+    inner += `<div>${(msg.content || '').replace(/</g, '&lt;')}</div>`;
   } else if (msg.msg_type === 'image') {
-    inner = `<img src="${msg.media_url}" alt="عکس" style="max-width:100%;border-radius:8px">`;
+    inner += `<img src="${msg.media_url}" alt="عکس" style="max-width:100%;border-radius:8px">`;
   } else if (msg.msg_type === 'video') {
-    inner = `<video src="${msg.media_url}" controls style="max-width:100%;border-radius:8px"></video>`;
+    inner += `<video src="${msg.media_url}" controls style="max-width:100%;border-radius:8px"></video>`;
   } else if (msg.msg_type === 'audio') {
-    inner = `<audio src="${msg.media_url}" controls style="width:220px"></audio>`;
+    inner += `<audio src="${msg.media_url}" controls style="width:220px"></audio>`;
   }
   const time = new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
   wrap.innerHTML = inner + `<div class="chat-msg-time">${time}</div>`;
+  wrap.onclick = () => setAdminReplyTarget(msg);
   return wrap;
 }
 
 window.openChatThread = async function (convId, name, phone) {
   currentThreadId = convId;
+  cancelAdminReply();
   document.getElementById('chat-thread-name').textContent = name || 'بدون نام';
   document.getElementById('chat-thread-phone').textContent = phone || '';
   document.getElementById('chat-thread-overlay').classList.add('show');
@@ -1345,9 +1377,11 @@ window.sendAdminChatText = async function () {
   const text = input.value.trim();
   if (!text || !currentThreadId) return;
   input.value = '';
+  const replyData = adminReplyingTo ? { reply_to_id: adminReplyingTo.id, reply_to_snippet: adminReplyingTo.snippet } : {};
+  cancelAdminReply();
   try {
     await sb.from('chat_messages').insert({
-      conversation_id: currentThreadId, sender: 'admin', msg_type: 'text', content: text
+      conversation_id: currentThreadId, sender: 'admin', msg_type: 'text', content: text, ...replyData
     });
     await sb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', currentThreadId);
   } catch (e) {
@@ -1359,6 +1393,8 @@ window.handleAdminChatFileUpload = async function (files) {
   if (!files || !files.length || !currentThreadId) return;
   const file = files[0];
   const kind = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'audio';
+  const replyData = adminReplyingTo ? { reply_to_id: adminReplyingTo.id, reply_to_snippet: adminReplyingTo.snippet } : {};
+  cancelAdminReply();
   try {
     const ext = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
     const path = `admin/${currentThreadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
@@ -1366,7 +1402,7 @@ window.handleAdminChatFileUpload = async function (files) {
     if (upErr) throw upErr;
     const { data: pub } = sb.storage.from('chat-media').getPublicUrl(path);
     await sb.from('chat_messages').insert({
-      conversation_id: currentThreadId, sender: 'admin', msg_type: kind, media_url: pub.publicUrl, media_path: path
+      conversation_id: currentThreadId, sender: 'admin', msg_type: kind, media_url: pub.publicUrl, media_path: path, ...replyData
     });
     await sb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', currentThreadId);
   } catch (e) {

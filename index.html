@@ -403,13 +403,6 @@ section{position:relative;z-index:1;min-height:100vh;padding:100px 2rem 4rem;max
 /* HERO */
 #home{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:120px;position:relative}
 .hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.hero-grid{position:absolute;inset:-10%;background-image:linear-gradient(rgba(201,168,76,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.08) 1px,transparent 1px);background-size:52px 52px;-webkit-mask-image:radial-gradient(ellipse 60% 55% at 50% 45%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 60% 55% at 50% 45%,#000 30%,transparent 75%);animation:gridDrift 24s linear infinite}
-@keyframes gridDrift{0%{background-position:0 0,0 0}100%{background-position:52px 52px,52px 52px}}
-.hero-glow{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35}
-.hero-glow-1{width:420px;height:420px;background:radial-gradient(circle,var(--gold) 0%,transparent 70%);top:-120px;right:-80px;animation:glowFloat1 13s ease-in-out infinite}
-.hero-glow-2{width:380px;height:380px;background:radial-gradient(circle,#2fbf7a 0%,transparent 70%);bottom:-140px;left:-100px;animation:glowFloat2 16s ease-in-out infinite}
-@keyframes glowFloat1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,25px) scale(1.12)}}
-@keyframes glowFloat2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(25px,-20px) scale(1.1)}}
 #home > *:not(.hero-bg){position:relative;z-index:1}
 #smartClock{font-family:'Orbitron',sans-serif;font-size:clamp(2.5rem,8vw,5rem);font-weight:700;color:var(--gold);letter-spacing:4px}
 .clock-date{font-size:13px;color:var(--text-muted);margin-top:6px;letter-spacing:2px;font-family:'Orbitron',sans-serif}
@@ -597,10 +590,21 @@ section{position:relative;z-index:1;min-height:100vh;padding:100px 2rem 4rem;max
 .stat-label{font-size:11px;color:var(--text-muted);margin-top:4px}
 
 /* CONTACT */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem}
-.contact-group-title{font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--gold);margin-bottom:1.25rem;letter-spacing:1px}
-.contact-item{display:flex;align-items:center;gap:1rem;padding:1rem 1.1rem;background:var(--dark2);border:1px solid rgba(201,168,76,.12);border-radius:10px;margin-bottom:.9rem;transition:border-color .3s}
-.contact-item:hover{border-color:rgba(201,168,76,.4)}
+.contact-unified-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.4rem}
+.contact-card{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.6rem;padding:2rem 1.3rem 1.6rem;background:linear-gradient(160deg,var(--dark2),var(--dark));border:1px solid rgba(201,168,76,.14);border-radius:16px;overflow:hidden;transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+.contact-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% -10%,rgba(201,168,76,.14),transparent 60%);opacity:0;transition:opacity .3s ease}
+.contact-card:hover{transform:translateY(-6px);border-color:rgba(201,168,76,.4);box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.contact-card:hover::before{opacity:1}
+.contact-card.cc-phone:hover{box-shadow:0 16px 40px rgba(34,197,94,.18)}
+.contact-card.cc-email:hover{box-shadow:0 16px 40px rgba(59,130,246,.18)}
+.contact-card.cc-insta:hover{box-shadow:0 16px 40px rgba(217,70,239,.18)}
+.contact-card.cc-tg:hover{box-shadow:0 16px 40px rgba(14,165,233,.18)}
+.contact-card.cc-dm:hover{box-shadow:0 16px 40px rgba(236,72,153,.18)}
+.contact-card .contact-icon-circle{width:58px;height:58px;font-size:1.6rem;position:relative;z-index:1}
+.contact-card .contact-label{font-size:13px;color:var(--text);font-weight:700;margin-top:.2rem;position:relative;z-index:1}
+.contact-card .contact-btns{justify-content:center;position:relative;z-index:1}
+.contact-card.cc-note{justify-content:center;background:linear-gradient(160deg,rgba(201,168,76,.07),var(--dark));border-style:dashed}
+.contact-card.cc-note p{color:var(--text-muted);font-size:13px;line-height:1.9;margin:0}
 .contact-icon-circle{width:46px;height:46px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border:1px solid rgba(201,168,76,.25)}
 .ci-phone{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3)}
 .ci-email{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3)}
@@ -630,7 +634,7 @@ footer span{color:var(--gold);font-weight:600}
 ::-webkit-scrollbar-track{background:var(--dark)}
 ::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:2px}
 @media(max-width:768px){
-  .about-grid,.contact-grid{grid-template-columns:1fr}
+  .about-grid{grid-template-columns:1fr}
   nav{padding:0 1rem}
   .nav-links{gap:1rem}
   .nav-links a{font-size:11px}
@@ -733,7 +737,40 @@ footer span{color:var(--gold);font-weight:600}
   .chat-panel{width:100vw;height:100vh;max-height:100vh;border-radius:0;bottom:0;right:0}
   .chat-panel-header{margin-top:calc(10px + env(safe-area-inset-top));}
   .chat-input-row{margin-bottom:calc(10px + env(safe-area-inset-bottom));}
-}
+/* ============ Scroll Entrance Animations (10 presets) ============ */
+.reveal{opacity:1}
+body[class*="anim-"] .reveal{opacity:0}
+.reveal.in-view{opacity:1 !important}
+
+body.anim-fade-up .reveal{transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+body.anim-fade-up .reveal.in-view{transform:translateY(0)}
+
+body.anim-fade-in .reveal{transition:opacity .8s ease}
+
+body.anim-zoom-in .reveal{transform:scale(.85);transition:opacity .6s ease,transform .6s ease}
+body.anim-zoom-in .reveal.in-view{transform:scale(1)}
+
+body.anim-slide-left .reveal{transform:translateX(40px);transition:opacity .7s ease,transform .7s ease}
+body.anim-slide-left .reveal.in-view{transform:translateX(0)}
+
+body.anim-slide-right .reveal{transform:translateX(-40px);transition:opacity .7s ease,transform .7s ease}
+body.anim-slide-right .reveal.in-view{transform:translateX(0)}
+
+body.anim-blur-in .reveal{filter:blur(12px);transform:translateY(10px);transition:opacity .8s ease,filter .8s ease,transform .8s ease}
+body.anim-blur-in .reveal.in-view{filter:blur(0);transform:translateY(0)}
+
+body.anim-flip-up .reveal{transform:perspective(700px) rotateX(35deg);transform-origin:bottom center;transition:opacity .6s ease,transform .6s ease}
+body.anim-flip-up .reveal.in-view{transform:perspective(700px) rotateX(0)}
+
+body.anim-glitch-in .reveal{transition:opacity .25s steps(3,end)}
+body.anim-glitch-in .reveal.in-view{animation:revealGlitch .5s steps(2,end) forwards}
+@keyframes revealGlitch{0%{opacity:0;transform:translate(-6px,0)}20%{opacity:1;transform:translate(6px,0)}40%{transform:translate(-4px,0)}60%{transform:translate(4px,0)}80%{transform:translate(-2px,0)}100%{transform:translate(0,0)}}
+
+body.anim-bounce-in .reveal{transform:scale(.6);transition:opacity .5s ease,transform .5s cubic-bezier(.34,1.8,.64,1)}
+body.anim-bounce-in .reveal.in-view{transform:scale(1)}
+
+body.anim-rotate-in .reveal{transform:rotate(-8deg) scale(.92);transition:opacity .6s ease,transform .6s ease}
+body.anim-rotate-in .reveal.in-view{transform:rotate(0) scale(1)}
 </style>
 </head>
 <body>
@@ -834,9 +871,6 @@ footer span{color:var(--gold);font-weight:600}
 <!-- HOME -->
 <section id="home">
   <div class="hero-bg">
-    <div class="hero-glow hero-glow-1"></div>
-    <div class="hero-glow hero-glow-2"></div>
-    <div class="hero-grid"></div>
     <canvas id="techCanvas" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.6"></canvas>
     <div class="hero-scan"></div>
     <div class="hero-corner hero-corner-tl"></div>
@@ -927,66 +961,51 @@ footer span{color:var(--gold);font-weight:600}
     <div class="section-line"></div>
     <p class="section-sub">CONTACT</p>
   </div>
-  <div class="contact-grid">
-    <div>
-      <div class="contact-group-title">📡 اطلاعات تماس</div>
-      <div class="contact-item">
-        <div class="contact-icon-circle ci-phone">📞</div>
-        <div style="flex:1">
-          <div class="contact-label">شماره تماس</div>
-          <div class="contact-value" id="contact-phone">09037241969</div>
-          <div class="contact-btns">
-            <a href="tel:09037241969" class="cbtn cbtn-green" id="contact-tel-link">📞 تماس</a>
-            <a href="sms:09037241969" class="cbtn cbtn-gray" id="contact-sms-link">💬 پیامک</a>
-          </div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon-circle ci-email">✉️</div>
-        <div style="flex:1">
-          <div class="contact-label">ایمیل</div>
-          <div class="contact-value" style="font-size:12px" id="contact-email">SA0AR0A0@GMAIL.COM</div>
-          <div class="contact-btns">
-            <a href="mailto:SA0AR0A0@GMAIL.COM" class="cbtn cbtn-blue" id="contact-email-link">✉️ ارسال ایمیل</a>
-          </div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon-circle ci-insta">📸</div>
-        <div style="flex:1">
-          <div class="contact-label">اینستاگرام</div>
-          <div class="contact-value" id="contact-insta">@SALAR_SARAFRAZ</div>
-          <div class="contact-btns">
-            <a href="https://instagram.com/SALAR_SARAFRAZ" target="_blank" class="cbtn cbtn-purple">📸 پروفایل</a>
-          </div>
-        </div>
+  <div class="contact-unified-grid">
+    <div class="contact-card cc-phone">
+      <div class="contact-icon-circle ci-phone">📞</div>
+      <div class="contact-label">شماره تماس</div>
+      <div class="contact-value" id="contact-phone">09037241969</div>
+      <div class="contact-btns">
+        <a href="tel:09037241969" class="cbtn cbtn-green" id="contact-tel-link">📞 تماس</a>
+        <a href="sms:09037241969" class="cbtn cbtn-gray" id="contact-sms-link">💬 پیامک</a>
       </div>
     </div>
-    <div>
-      <div class="contact-group-title">💬 پیام مستقیم</div>
-      <div class="contact-item">
-        <div class="contact-icon-circle ci-tg">✈️</div>
-        <div style="flex:1">
-          <div class="contact-label">تلگرام</div>
-          <div class="contact-value" id="contact-tg">@SALAR_SR5</div>
-          <div class="contact-btns">
-            <a href="https://t.me/SALAR_SR5" target="_blank" class="cbtn cbtn-sky">✈️ پیام در تلگرام</a>
-          </div>
-        </div>
+    <div class="contact-card cc-email">
+      <div class="contact-icon-circle ci-email">✉️</div>
+      <div class="contact-label">ایمیل</div>
+      <div class="contact-value" style="font-size:12px" id="contact-email">SA0AR0A0@GMAIL.COM</div>
+      <div class="contact-btns">
+        <a href="mailto:SA0AR0A0@GMAIL.COM" class="cbtn cbtn-blue" id="contact-email-link">✉️ ارسال ایمیل</a>
       </div>
-      <div class="contact-item">
-        <div class="contact-icon-circle ci-dm">💌</div>
-        <div style="flex:1">
-          <div class="contact-label">دایرکت اینستاگرام</div>
-          <div class="contact-value">@SALAR_SARAFRAZ</div>
-          <div class="contact-btns">
-            <a href="https://ig.me/m/SALAR_SARAFRAZ" target="_blank" class="cbtn cbtn-pink">💌 پیام در اینستاگرام</a>
-          </div>
-        </div>
+    </div>
+    <div class="contact-card cc-insta">
+      <div class="contact-icon-circle ci-insta">📸</div>
+      <div class="contact-label">اینستاگرام</div>
+      <div class="contact-value" id="contact-insta">@SALAR_SARAFRAZ</div>
+      <div class="contact-btns">
+        <a href="https://instagram.com/SALAR_SARAFRAZ" target="_blank" class="cbtn cbtn-purple">📸 پروفایل</a>
       </div>
-      <div style="margin-top:1.5rem;padding:1.25rem;background:var(--dark2);border:1px solid rgba(201,168,76,.1);border-radius:10px">
-        <p style="color:var(--text-muted);font-size:13px;line-height:1.9;text-align:center">برای همکاری، سفارش پروژه، یا هرگونه سوال فنی از هر کانالی که راحت‌تری پیام بده.</p>
+    </div>
+    <div class="contact-card cc-tg">
+      <div class="contact-icon-circle ci-tg">✈️</div>
+      <div class="contact-label">تلگرام</div>
+      <div class="contact-value" id="contact-tg">@SALAR_SR5</div>
+      <div class="contact-btns">
+        <a href="https://t.me/SALAR_SR5" target="_blank" class="cbtn cbtn-sky">✈️ پیام در تلگرام</a>
       </div>
+    </div>
+    <div class="contact-card cc-dm">
+      <div class="contact-icon-circle ci-dm">💌</div>
+      <div class="contact-label">دایرکت اینستاگرام</div>
+      <div class="contact-value">@SALAR_SARAFRAZ</div>
+      <div class="contact-btns">
+        <a href="https://ig.me/m/SALAR_SARAFRAZ" target="_blank" class="cbtn cbtn-pink">💌 پیام در اینستاگرام</a>
+      </div>
+    </div>
+    <div class="contact-card cc-note">
+      <div class="contact-icon-circle" style="background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3)">💡</div>
+      <p>برای همکاری، سفارش پروژه، یا هرگونه سوال فنی از هر کانالی که راحت‌تری پیام بده — سریع جواب می‌دم.</p>
     </div>
   </div>
 </section>
@@ -1326,6 +1345,8 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
       const { data } = await sb.from('site_settings').select('*').eq('id',1).single();
       if (!data) return;
 
+      document.body.classList.add('anim-' + (data.scroll_anim || 'fade-up'));
+
       // Hero
       if (data.name) {
         const el = document.getElementById('hero-name');
@@ -1643,6 +1664,25 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
     if (prompt) prompt.classList.remove('show');
   };
 
+  // ── Scroll Entrance Reveal ───────────────────────────────────
+  function initScrollReveal() {
+    const targets = document.querySelectorAll(
+      '.section-header, #skills-grid-dynamic > *, #apps-grid-dynamic > *, .about-grid > *, .contact-unified-grid > *'
+    );
+    targets.forEach(el => el.classList.add('reveal'));
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    targets.forEach(el => io.observe(el));
+  }
+
   // ── Run All ───────────────────────────────────────────────────
   await Promise.all([
     loadSettings(),
@@ -1651,6 +1691,8 @@ document.querySelectorAll('#skills').forEach(s=>obs.observe(s));
     loadGalleryPhotos(),
     loadBackgroundMusic()
   ]);
+
+  initScrollReveal();
 
 })();
 </script>

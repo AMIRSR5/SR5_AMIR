@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>داشبورد | AMIR_SR5 Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#C9A84C;
+  --gold-light:#E8C96A;
+  --black:#080808;
+  --dark:#0f0f0f;
+  --dark2:#1A1A1A;
+  --dark3:#242424;
+  --sidebar-w:260px;
+  --text:#E8E8E8;
+  --text-muted:#888;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+}
+body{
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  background:var(--dark);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+}
+
+/* ====== SIDEBAR ====== */
+.sidebar{
+  width:var(--sidebar-w);
+  min-height:100vh;
+  background:var(--black);
+  border-left:1px solid rgba(201,168,76,0.15);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;right:0;bottom:0;
+  z-index:100;
+  transition:transform 0.3s;
+}
+.sidebar-header{
+  padding:1.5rem 1.25rem;
+  border-bottom:1px solid rgba(201,168,76,0.1);
+  display:flex;align-items:center;gap:12px;
+}
+.sidebar-logo{
+  width:40px;height:40px;border-radius:50%;
+  border:1.5px solid var(--gold);
+  object-fit:cover;
+}
+.sidebar-title{
+  font-size:13px;font-weight:700;
+  color:var(--gold);letter-spacing:2px;
+}
+.sidebar-sub{color:var(--text-muted);font-size:11px;margin-top:2px}
+
+.nav-section{
+  padding:1rem 1rem 0.5rem;
+  font-size:10px;color:var(--text-muted);
+  letter-spacing:2px;text-transform:uppercase;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 1.25rem;
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:all 0.2s;
+  font-size:14px;
+  border-right:3px solid transparent;
+  text-decoration:none;
+}
+.nav-item:hover,.nav-item.active{
+  color:var(--gold);
+  background:rgba(201,168,76,0.06);
+  border-right-color:var(--gold);
+}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+
+.sidebar-footer{
+  margin-top:auto;
+  padding:1.25rem;
+  border-top:1px solid rgba(201,168,76,0.1);
+}
+.admin-info{
+  font-size:12px;color:var(--text-muted);margin-bottom:10px;
+  word-break:break-all;
+}
+.btn-logout{
+  width:100%;padding:9px;
+  background:rgba(239,68,68,0.1);
+  border:1px solid rgba(239,68,68,0.3);
+  border-radius:6px;
+  color:#fca5a5;font-size:13px;
+  cursor:pointer;transition:all 0.2s;
+  font-family:inherit;
+}
+.btn-logout:hover{background:rgba(239,68,68,0.2)}
+
+/* Mobile toggle */
+.menu-toggle{
+  display:none;
+  position:fixed;top:1rem;left:1rem;z-index:200;
+  background:var(--dark2);
+  border:1px solid rgba(201,168,76,0.2);
+  border-radius:8px;
+  padding:8px 12px;
+  color:var(--gold);font-size:18px;
+  cursor:pointer;
+}
+.overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:99;
+}
+
+/* ====== MAIN ====== */
+.main{
+  margin-right:var(--sidebar-w);
+  flex:1;
+  padding:2rem;
+  min-height:100vh;
+}
+.page{display:none}
+.page.active{display:block}
+
+.page-title{
+  font-size:1.4rem;font-weight:700;
+  color:var(--text);margin-bottom:0.25rem;
+}
+.page-sub{font-size:13px;color:var(--text-muted);margin-bottom:2rem}
+
+/* Cards */
+.cards-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:1rem;margin-bottom:2rem;
+}
+.stat-card{
+  background:var(--dark2);
+  border:1px solid rgba(201,168,76,0.12);
+  border-radius:10px;padding:1.25rem;
+}
+.stat-card .num{
+  font-size:1.8rem;font-weight:700;
+  color:var(--gold);
+}
+.stat-card .label{
+  font-size:12px;color:var(--text-muted);margin-top:4px;
+}
+.stat-card .icon{font-size:1.5rem;margin-bottom:0.5rem}
+
+/* Section card */
+.section-card{
+  background:var(--dark2);
+  border:1px solid rgba(201,168,76,0.12);
+  border-radius:10px;padding:1.5rem;
+  margin-bottom:1.5rem;
+}
+.section-card h3{
+  font-size:14px;font-weight:600;
+  color:var(--text);margin-bottom:1rem;
+  padding-bottom:0.75rem;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+/* Forms */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{margin-bottom:1rem}
+.form-group label{
+  display:block;font-size:12px;
+  color:var(--text-muted);margin-bottom:5px;
+  letter-spacing:0.5px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select{
+  width:100%;
+  padding:10px 12px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(201,168,76,0.15);
+  border-radius:7px;
+  color:var(--text);font-size:13px;
+  font-family:inherit;outline:none;
+  transition:border-color 0.2s;
+  direction:rtl;
+}
+.form-group input:focus,
+.form-group textarea:focus{border-color:var(--gold)}
+.form-group textarea{resize:vertical;min-height:80px}
+
+/* Buttons */
+.btn{
+  padding:9px 20px;border-radius:6px;
+  font-size:13px;font-weight:600;
+  cursor:pointer;border:none;
+  font-family:inherit;transition:all 0.2s;
+}
+.btn-primary{background:var(--gold);color:#000}
+.btn-primary:hover{background:var(--gold-light)}
+.btn-danger{background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
+.btn-danger:hover{background:rgba(239,68,68,0.25)}
+.btn-ghost{background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.1)}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+
+/* Toast */
+.toast-wrap{
+  position:fixed;bottom:2rem;left:2rem;
+  display:flex;flex-direction:column;gap:8px;
+  z-index:9999;
+}
+.toast{
+  background:var(--dark2);
+  border-radius:8px;padding:12px 16px;
+  font-size:13px;border-left:3px solid var(--gold);
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  animation:toastIn 0.3s ease;
+  min-width:220px;
+}
+.toast.success{border-left-color:var(--green);color:#86efac}
+.toast.error{border-left-color:var(--red);color:#fca5a5}
+@keyframes toastIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.05)}
+th{color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+td{color:var(--text)}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{
+  display:inline-block;
+  padding:2px 8px;border-radius:20px;
+  font-size:11px;font-weight:600;
+}
+.badge-green{background:rgba(34,197,94,0.15);color:#86efac}
+.badge-gray{background:rgba(255,255,255,0.08);color:var(--text-muted)}
+.badge-gold{background:rgba(201,168,76,0.15);color:var(--gold)}
+
+/* Loading */
+.loading{
+  text-align:center;padding:3rem;
+  color:var(--text-muted);font-size:14px;
+}
+.spinner-lg{
+  width:30px;height:30px;
+  border:3px solid rgba(201,168,76,0.2);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  margin:0 auto 1rem;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Skills grid */
+.skills-edit{display:grid;gap:8px}
+.skill-row{
+  display:flex;align-items:center;gap:8px;
+}
+.skill-row input[type=text]{flex:1}
+.skill-row input[type=range]{flex:1;accent-color:var(--gold)}
+.skill-pct{width:36px;font-size:13px;color:var(--gold)}
+
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.gallery-item{position:relative;border-radius:10px;overflow:hidden;border:1px solid rgba(201,168,76,0.2);background:rgba(255,255,255,0.03);aspect-ratio:3/4}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-item .g-order{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:var(--gold);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.gallery-item .g-actions{position:absolute;bottom:0;left:0;right:0;display:flex;gap:4px;padding:6px;background:linear-gradient(to top,rgba(0,0,0,0.85),transparent)}
+.gallery-item .g-actions button{flex:1;padding:5px 4px;font-size:11px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:var(--text);cursor:pointer}
+.gallery-item .g-actions button:hover{background:rgba(255,255,255,0.18)}
+.gallery-item .g-actions button.g-del{background:rgba(239,68,68,0.2);color:#fca5a5;border-color:rgba(239,68,68,0.3)}
+.gallery-item .g-actions button.g-del:hover{background:rgba(239,68,68,0.35)}
+.gallery-empty{grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;font-size:13px}
+
+.anim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.anim-card{border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:border-color .2s}
+.anim-card:hover{border-color:rgba(201,168,76,0.4)}
+.anim-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.08)}
+.anim-demo-box{width:100%;height:60px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;opacity:1}
+.anim-card-label{font-size:12px;color:var(--text)}
+.anim-card.selected .anim-card-label{color:var(--gold);font-weight:700}
+
+/* demo playback states — mirror the 10 site presets */
+.anim-demo-box.play-fade-up{animation:demoFadeUp .7s ease}
+@keyframes demoFadeUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+.anim-demo-box.play-fade-in{animation:demoFadeIn .8s ease}
+@keyframes demoFadeIn{0%{opacity:0}100%{opacity:1}}
+.anim-demo-box.play-zoom-in{animation:demoZoomIn .6s ease}
+@keyframes demoZoomIn{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
+.anim-demo-box.play-slide-left{animation:demoSlideLeft .6s ease}
+@keyframes demoSlideLeft{0%{opacity:0;transform:translateX(35px)}100%{opacity:1;transform:translateX(0)}}
+.anim-demo-box.play-slide-right{animation:demoSlideRight .6s ease}
+@keyframes demoSlideRight{0%{opacity:0;transform:translateX(-35px)}100%{opacity:1;transform:translateX(0)}}
+.anim-demo-box.play-blur-in{animation:demoBlurIn .7s ease}
+@keyframes demoBlurIn{0%{opacity:0;filter:blur(10px)}100%{opacity:1;filter:blur(0)}}
+.anim-demo-box.play-flip-up{animation:demoFlipUp .6s ease}
+@keyframes demoFlipUp{0%{opacity:0;transform:perspective(500px) rotateX(50deg)}100%{opacity:1;transform:perspective(500px) rotateX(0)}}
+.anim-demo-box.play-glitch-in{animation:demoGlitch .5s steps(2,end)}
+@keyframes demoGlitch{0%{opacity:0;transform:translate(-6px,0)}20%{opacity:1;transform:translate(6px,0)}40%{transform:translate(-4px,0)}60%{transform:translate(4px,0)}80%{transform:translate(-2px,0)}100%{transform:translate(0,0)}}
+.anim-demo-box.play-bounce-in{animation:demoBounce .5s cubic-bezier(.34,1.8,.64,1)}
+@keyframes demoBounce{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
+.anim-demo-box.play-rotate-in{animation:demoRotate .6s ease}
+@keyframes demoRotate{0%{opacity:0;transform:rotate(-20deg) scale(.85)}100%{opacity:1;transform:rotate(0) scale(1)}}
+
+.conv-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;cursor:pointer;background:rgba(255,255,255,0.02)}
+.conv-row:hover{background:rgba(201,168,76,0.08)}
+.conv-row.unread{border-color:rgba(201,168,76,0.5);background:rgba(201,168,76,0.06)}
+.conv-name{font-weight:700;font-size:14px}
+.conv-phone{font-size:12px;color:var(--text-muted);direction:ltr;text-align:right}
+.conv-time{font-size:11px;color:var(--text-muted)}
+.conv-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;margin-left:6px}
+
+.chat-thread-overlay{position:fixed;inset:0;background:#050805;z-index:5000;display:none;flex-direction:column;font-family:'Courier New',monospace}
+.chat-thread-overlay.show{display:flex}
+.chat-thread-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#0a0f0a;border-bottom:1px solid rgba(0,255,120,0.15)}
+.chat-thread-header .btn{margin:0}
+.chat-thread-title{color:var(--gold);font-weight:700;font-size:14px}
+.chat-thread-sub{color:#5fff9f;font-size:11px;margin-top:2px;direction:ltr;text-align:right}
+.chat-thread-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
+.chat-msg-row{display:flex;touch-action:pan-y}
+.chat-msg-row.admin{justify-content:flex-end}
+.chat-msg-row.visitor{justify-content:flex-start}
+.chat-swipe-reply-icon{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.12);color:#5fe89a;display:flex;align-items:center;justify-content:center;font-size:12px;align-self:center;opacity:0;transition:opacity .15s;flex-shrink:0;margin:0 6px}
+.chat-msg-row.swiping .chat-swipe-reply-icon{opacity:1}
+.chat-msg{max-width:78%;padding:9px 13px 7px;border-radius:14px;font-size:13.5px;line-height:1.65;word-wrap:break-word;position:relative;font-family:'Vazirmatn',sans-serif;cursor:grab;transition:transform .15s ease}
+.chat-msg.admin{background:linear-gradient(135deg,rgba(80,220,150,.35),rgba(40,150,100,.35));color:#eafff2;border-bottom-left-radius:4px}
+.chat-msg.visitor{background:rgba(255,255,255,.08);color:#f0f0f0;border-bottom-right-radius:4px}
+.chat-msg img,.chat-msg video{max-width:100%;border-radius:8px;display:block;margin-top:4px}
+.chat-msg audio{width:220px;margin-top:4px}
+.chat-msg-time{font-size:9.5px;opacity:.65;margin-top:3px;direction:ltr;text-align:left}
+.chat-thread-input{display:flex;align-items:center;gap:6px;padding:10px;background:#0a0f0a;border-top:1px solid rgba(0,255,120,0.15)}
+.chat-thread-input input[type=text]{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:9px 14px;color:#fff;font-family:'Vazirmatn',sans-serif;font-size:13px}
+.chat-thread-input button{background:none;border:none;color:#5fff9f;font-size:18px;cursor:pointer}
+.chat-thread-input .send{background:var(--gold);color:#000;border-radius:50%;width:34px;height:34px;flex-shrink:0;font-size:15px}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(260px)}
+  .sidebar.open{transform:translateX(0)}
+  .menu-toggle{display:block}
+  .overlay.show{display:block}
+  .main{margin-right:0;padding:1rem;padding-top:4rem}
+  .form-row{grid-template-columns:1fr}
+  .cards-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img src="../icon.png" alt="SR5" class="sidebar-logo" onerror="this.style.display='none'">
+    <div>
+      <div class="sidebar-title">AMIR_SR5</div>
+      <div class="sidebar-sub">پنل مدیریت</div>
+    </div>
+  </div>
+
+  <div class="nav-section">منو</div>
+  <a class="nav-item active" onclick="showPage('dashboard')" href="#">
+    <span class="nav-icon">📊</span> داشبورد
+  </a>
+  <a class="nav-item" onclick="showPage('settings')" href="#">
+    <span class="nav-icon">👤</span> اطلاعات شخصی
+  </a>
+  <a class="nav-item" onclick="showPage('contact')" href="#">
+    <span class="nav-icon">📞</span> اطلاعات تماس
+  </a>
+  <a class="nav-item" onclick="showPage('gallery')" href="#">
+    <span class="nav-icon">🖼️</span> عکس‌های من
+  </a>
+  <a class="nav-item" onclick="showPage('music')" href="#">
+    <span class="nav-icon">🎵</span> موزیک پس‌زمینه
+  </a>
+  <a class="nav-item" onclick="showPage('chat')" href="#">
+    <span class="nav-icon">💬</span> چت آنلاین
+  </a>
+  <a class="nav-item" onclick="showPage('animations')" href="#">
+    <span class="nav-icon">✨</span> انیمیشن ورود
+  </a>
+  <a class="nav-item" onclick="showPage('skills')" href="#">
+    <span class="nav-icon">⚡</span> مهارت‌ها
+  </a>
+  <a class="nav-item" onclick="showPage('projects')" href="#">
+    <span class="nav-icon">🚀</span> پروژه‌ها
+  </a>
+  <a class="nav-item" onclick="showPage('blog')" href="#">
+    <span class="nav-icon">📝</span> بلاگ
+  </a>
+
+  <div class="nav-section">سایت</div>
+  <a class="nav-item" href="../" target="_blank">
+    <span class="nav-icon">🌐</span> مشاهده سایت
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="admin-info" id="adminEmail">در حال بارگذاری...</div>
+    <button class="btn-logout" onclick="handleLogout()">🚪 خروج</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">داشبورد</div>
+    <div class="page-sub">خلاصه وضعیت سایت</div>
+    <div class="cards-row">
+      <div class="stat-card">
+        <div class="icon">🚀</div>
+        <div class="num" id="stat-projects">—</div>
+        <div class="label">پروژه</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">📝</div>
+        <div class="num" id="stat-posts">—</div>
+        <div class="label">مقاله</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">✅</div>
+        <div class="num" id="stat-published">—</div>
+        <div class="label">منتشرشده</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">✏️</div>
+        <div class="num" id="stat-drafts">—</div>
+        <div class="label">پیش‌نویس</div>
+      </div>
+    </div>
+    <div class="section-card">
+      <h3>وضعیت سیستم</h3>
+      <p style="color:var(--text-muted);font-size:13px;line-height:1.8">
+        ✅ ورود موفق<br>
+        ✅ اتصال به Supabase برقرار<br>
+        ✅ Session فعال<br>
+        <span id="db-status">⏳ در حال بررسی Database...</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="page-title">اطلاعات شخصی</div>
+    <div class="page-sub">مدیریت اطلاعات About و Hero</div>
+    <div class="section-card">
+      <h3>اطلاعات اصلی</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>نام کامل</label>
+          <input type="text" id="s-name" placeholder="امیرحسین سرافراز">
+        </div>
+        <div class="form-group">
+          <label>نام نمایشی / Alias</label>
+          <input type="text" id="s-alias" placeholder="AMIR_SR5">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>عنوان حرفه‌ای</label>
+        <input type="text" id="s-title" placeholder="Full-Stack Developer & PWA Specialist">
+      </div>
+      <div class="form-group">
+        <label>توضیح کوتاه (Hero)</label>
+        <textarea id="s-hero-desc" placeholder="جمله کوتاه زیر نام در صفحه اصلی"></textarea>
+      </div>
+      <div class="form-group">
+        <label>درباره من (About)</label>
+        <textarea id="s-about" style="min-height:120px" placeholder="متن بخش About Me..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>تعداد پروژه‌های فعال</label>
+          <input type="text" id="s-projects-count" placeholder="+۱۰">
+        </div>
+        <div class="form-group">
+          <label>سال‌های سابقه</label>
+          <input type="text" id="s-exp" placeholder="۲">
+        </div>
+        <div class="form-group">
+          <label>سن</label>
+          <input type="text" id="s-age" placeholder="۲۰">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()">💾 ذخیره</button>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="page" id="page-contact">
+    <div class="page-title">اطلاعات تماس</div>
+    <div class="page-sub">مدیریت راه‌های ارتباطی</div>
+    <div class="section-card">
+      <h3>اطلاعات تماس</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>شماره تماس</label>
+          <input type="text" id="c-phone" placeholder="09037241969" dir="ltr">
+        </div>
+        <div class="form-group">
+          <label>ایمیل</label>
+          <input type="email" id="c-email" placeholder="admin@example.com" dir="ltr">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>اینستاگرام (بدون @)</label>
+          <input type="text" id="c-instagram" placeholder="SALAR_SARAFRAZ" dir="ltr">
+        </div>
+        <div class="form-group">
+          <label>تلگرام (بدون @)</label>
+          <input type="text" id="c-telegram" placeholder="SALAR_SR5" dir="ltr">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>گیتهاب (username)</label>
+        <input type="text" id="c-github" placeholder="AMIRSR5" dir="ltr">
+      </div>
+      <button class="btn btn-primary" onclick="saveContact()">💾 ذخیره</button>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="page" id="page-skills">
+    <div class="page-title">مهارت‌ها</div>
+    <div class="page-sub">مدیریت Skills سایت</div>
+    <div class="section-card">
+      <h3>مهارت‌ها</h3>
+      <div class="skills-edit" id="skills-list">
+        <div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="addSkillRow()">+ افزودن مهارت</button>
+        <button class="btn btn-primary" onclick="saveSkills()">💾 ذخیره همه</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="page" id="page-gallery">
+    <div class="page-title">عکس‌های من</div>
+    <div class="page-sub">این عکس‌ها به‌صورت اسلایدشوی خودکار در بخش About سایت نمایش داده می‌شن</div>
+    <div class="section-card">
+      <h3>افزودن عکس</h3>
+      <div class="form-group">
+        <label>یک یا چند عکس انتخاب کن (JPG / PNG / WebP)</label>
+        <input type="file" id="gallery-file-input" accept="image/*" multiple onchange="handleGalleryUpload(this.files)">
+      </div>
+      <div id="gallery-upload-status" style="font-size:13px;color:var(--text-muted)"></div>
+    </div>
+    <div class="section-card">
+      <h3>ترتیب نمایش <span style="font-size:12px;color:var(--text-muted);font-weight:400">(بالا رفتن = اول اسلایدشو)</span></h3>
+      <div class="gallery-grid" id="gallery-grid">
+        <div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MUSIC -->
+  <div class="page" id="page-music">
+    <div class="page-title">موزیک پس‌زمینه</div>
+    <div class="page-sub">وقتی کاربر وارد سایت می‌شه، یه کادر کوچیک ازش می‌پرسه صدا پخش بشه یا نه — خودِ موزیک بی‌صدا و خودکار از قبل آماده‌ست</div>
+    <div class="section-card">
+      <h3>وضعیت فعلی</h3>
+      <div id="music-current"><div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div></div>
+    </div>
+    <div class="section-card">
+      <h3>آپلود / جایگزینی موزیک</h3>
+      <div class="form-group">
+        <label>یک فایل صوتی انتخاب کن (MP3 / M4A / OGG — حداکثر چند مگابایت، برای لود سریع سایت)</label>
+        <input type="file" id="music-file-input" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac,.wma,.opus" onchange="handleMusicUpload(this.files)">
+      </div>
+      <div id="music-upload-status" style="font-size:13px;color:var(--text-muted)"></div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="page" id="page-chat">
+    <div class="page-title">چت آنلاین</div>
+    <div class="page-sub">لیست گفتگوهایی که کاربران تو سایت باهات شروع کردن</div>
+    <div class="section-card">
+      <div id="chat-conv-list"><div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div></div>
+    </div>
+  </div>
+
+  <!-- ANIMATIONS -->
+  <div class="page" id="page-animations">
+    <div class="page-title">انیمیشن ورود</div>
+    <div class="page-sub">رو هر کارت بزن تا پیش‌نمایشش رو ببینی، بعد همونی که خوشت اومد رو انتخاب و ذخیره کن</div>
+    <div class="section-card">
+      <div class="anim-grid" id="anim-grid"></div>
+      <button class="btn btn-primary" style="margin-top:1.25rem;width:100%" onclick="saveAnimSetting()">✅ ذخیره و اعمال روی سایت</button>
+      <div id="anim-save-status" style="font-size:13px;color:var(--text-muted);margin-top:8px;text-align:center"></div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="page" id="page-projects">
+    <div class="page-title">پروژه‌ها</div>
+    <div class="page-sub">مدیریت نمونه‌کارها</div>
+    <div style="margin-bottom:1rem">
+      <button class="btn btn-primary" onclick="showAddProject()">+ پروژه جدید</button>
+    </div>
+    <div class="section-card">
+      <div id="projects-table">
+        <div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Project Form -->
+    <div class="section-card" id="project-form" style="display:none">
+      <h3 id="project-form-title">پروژه جدید</h3>
+      <input type="hidden" id="p-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>عنوان پروژه</label>
+          <input type="text" id="p-title" placeholder="CYBER GYM">
+        </div>
+        <div class="form-group">
+          <label>زیرعنوان</label>
+          <input type="text" id="p-subtitle" placeholder="وب اپ تمرین هوشمند">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>توضیحات</label>
+        <textarea id="p-desc" style="min-height:100px"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>لینک وب‌اپ</label>
+          <input type="url" id="p-url" placeholder="https://..." dir="ltr">
+        </div>
+        <div class="form-group">
+          <label>لینک دانلود APK (اختیاری)</label>
+          <input type="url" id="p-apk" placeholder="https://..." dir="ltr">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>تکنولوژی‌ها (با کاما جدا کن)</label>
+        <input type="text" id="p-tech" placeholder="React, JavaScript, PWA" dir="ltr">
+      </div>
+      <div class="form-group">
+        <label>وضعیت</label>
+        <select id="p-status">
+          <option value="published">منتشرشده</option>
+          <option value="draft">مخفی</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveProject()">💾 ذخیره</button>
+        <button class="btn btn-ghost" onclick="cancelProject()">انصراف</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOG -->
+  <div class="page" id="page-blog">
+    <div class="page-title">بلاگ</div>
+    <div class="page-sub">مدیریت مقالات</div>
+    <div style="margin-bottom:1rem">
+      <button class="btn btn-primary" onclick="showAddPost()">+ مقاله جدید</button>
+    </div>
+
+    <!-- Posts list -->
+    <div class="section-card" id="posts-list-section">
+      <div id="posts-table">
+        <div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div id="post-editor" style="display:none">
+      <div class="section-card">
+        <h3 id="editor-title">مقاله جدید</h3>
+        <input type="hidden" id="post-id">
+        <div class="form-group">
+          <label>عنوان مقاله</label>
+          <input type="text" id="post-title" placeholder="عنوان مقاله...">
+        </div>
+        <div class="form-group">
+          <label>Slug (URL)</label>
+          <input type="text" id="post-slug" placeholder="my-article-slug" dir="ltr">
+        </div>
+        <div class="form-group">
+          <label>خلاصه (Excerpt)</label>
+          <textarea id="post-excerpt" style="min-height:70px" placeholder="خلاصه مقاله..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>محتوا (HTML پشتیبانی می‌شود)</label>
+          <div style="border:1px solid rgba(201,168,76,0.2);border-radius:8px;overflow:hidden">
+            <!-- Editor toolbar -->
+            <div style="padding:8px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="fmt('bold')"><b>B</b></button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="fmt('italic')"><i>I</i></button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertTag('h2')">H2</button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertTag('h3')">H3</button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertTag('p')">¶</button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertTag('blockquote')">❝</button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertTag('code')">{'<>'}</button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertLink()">🔗</button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertList('ul')">• List</button>
+              <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="insertList('ol')">1. List</button>
+            </div>
+            <textarea id="post-content" style="min-height:300px;border:none;border-radius:0;background:rgba(255,255,255,0.02);width:100%;padding:12px;color:var(--text);font-size:13px;font-family:monospace;resize:vertical;direction:rtl" placeholder="محتوای مقاله را اینجا بنویس... (HTML پشتیبانی می‌شود)"></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>دسته‌بندی</label>
+            <input type="text" id="post-category" placeholder="JavaScript, React, PWA..." dir="ltr">
+          </div>
+          <div class="form-group">
+            <label>تگ‌ها (با کاما)</label>
+            <input type="text" id="post-tags" placeholder="react, pwa, tutorial" dir="ltr">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>وضعیت</label>
+          <select id="post-status">
+            <option value="draft">پیش‌نویس</option>
+            <option value="published">منتشرشده</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SEO Settings -->
+      <div class="section-card">
+        <h3>⚙️ تنظیمات SEO</h3>
+        <div class="form-group">
+          <label>SEO Title (اگر خالی بماند از عنوان مقاله استفاده می‌شود)</label>
+          <input type="text" id="post-seo-title" placeholder="SEO Title...">
+        </div>
+        <div class="form-group">
+          <label>Meta Description</label>
+          <textarea id="post-seo-desc" placeholder="توضیح متا برای گوگل (حداکثر 160 کاراکتر)..." style="min-height:70px"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Focus Keyword</label>
+            <input type="text" id="post-seo-kw" placeholder="کلمه کلیدی اصلی" dir="ltr">
+          </div>
+          <div class="form-group">
+            <label>Canonical URL</label>
+            <input type="url" id="post-seo-canonical" placeholder="https://..." dir="ltr">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>OG Title</label>
+          <input type="text" id="post-og-title" placeholder="عنوان Open Graph">
+        </div>
+        <div class="form-group">
+          <label>OG Description</label>
+          <textarea id="post-og-desc" placeholder="توضیح Open Graph..." style="min-height:60px"></textarea>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="post-noindex"> Noindex (در گوگل ایندکس نشود)
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem">
+        <button class="btn btn-primary" onclick="savePost('draft')">💾 ذخیره پیش‌نویس</button>
+        <button class="btn btn-primary" style="background:#22c55e;color:#000" onclick="savePost('published')">🚀 انتشار</button>
+        <button class="btn btn-ghost" onclick="previewPost()">👁 پیش‌نمایش</button>
+        <button class="btn btn-ghost" onclick="cancelPost()">انصراف</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Chat thread overlay -->
+<div class="chat-thread-overlay" id="chat-thread-overlay">
+  <div class="chat-thread-header">
+    <div>
+      <div class="chat-thread-title" id="chat-thread-name">—</div>
+      <div class="chat-thread-sub" id="chat-thread-phone">—</div>
+    </div>
+    <button class="btn btn-ghost" onclick="closeChatThread()">✕ بستن</button>
+  </div>
+  <div class="chat-thread-messages" id="chat-thread-messages"></div>
+  <div class="chat-reply-bar" id="admin-reply-bar" style="display:none;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,0.05);border-top:1px solid rgba(255,255,255,0.08)">
+    <div id="admin-reply-bar-text" style="font-size:12px;color:#cde;border-right:3px solid var(--gold);padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"></div>
+    <button onclick="cancelAdminReply()" style="background:none;border:none;color:#aaa;font-size:16px;cursor:pointer">✕</button>
+  </div>
+  <div class="chat-thread-input">
+    <input type="file" id="chat-thread-file-input" accept="image/*,video/*,audio/*" style="display:none" onchange="handleAdminChatFileUpload(this.files)">
+    <button onclick="document.getElementById('chat-thread-file-input').click()" title="ارسال فایل">📎</button>
+    <input type="text" id="chat-thread-text-input" placeholder="پاسخ بده..." onkeydown="if(event.key==='Enter')sendAdminChatText()">
+    <button class="send" onclick="sendAdminChatText()">➤</button>
+  </div>
+</div>
+
+
+<script>
+// ============================================================
+// INIT
+// ============================================================
+let sb = null;
+let currentUser = null;
+let skillsData = [];
+let projectsData = [];
+let postsData = [];
+
+// Global error visibility — since this panel is often checked from
+// a phone with no dev console, surface any uncaught JS error as a toast
+// so it can be screenshotted and reported.
+window.addEventListener('error', function (ev) {
+  console.error('Uncaught error:', ev.error || ev.message);
+  try { toast('⚠️ خطای جاوااسکریپت: ' + (ev.message || 'نامشخص'), 'error'); } catch (_) {}
+});
+window.addEventListener('unhandledrejection', function (ev) {
+  console.error('Unhandled promise rejection:', ev.reason);
+  try {
+    const msg = (ev.reason && (ev.reason.message || JSON.stringify(ev.reason))) || 'نامشخص';
+    toast('⚠️ خطای async: ' + msg, 'error');
+  } catch (_) {}
+});
+
+function initSupabase() {
+  if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
+    fetch('config.js?debug=' + Date.now())
+      .then(r => r.text().then(t => `status ${r.status} ${r.ok ? 'OK' : 'FAIL'} — first 80 chars: ${t.slice(0, 80)}`))
+      .catch(e => 'fetch error: ' + e.message)
+      .then(info => alert('config.js تنظیم نشده!\n\nDebug:\n' + info));
+    return false;
+  }
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return true;
+}
+
+// ============================================================
+// Auth Guard — اگر لاگین نبود برگرد به login
+// ============================================================
+async function authGuard() {
+  if (!initSupabase()) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.href = 'index.html';
+    return;
+  }
+  currentUser = session.user;
+  document.getElementById('adminEmail').textContent = '👤 ' + currentUser.email;
+
+  // Listen for auth changes
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT' || !session) {
+      window.location.href = 'index.html';
+    }
+  });
+
+  // Load initial data
+  await loadDashboard();
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+async function handleLogout() {
+  if (!confirm('آیا از پنل خارج می‌شوید؟')) return;
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  closeSidebar();
+
+  if (name === 'skills') loadSkills();
+  if (name === 'gallery') loadGallery();
+  if (name === 'music') loadMusic();
+  if (name === 'chat') loadChatConversations();
+  if (name === 'animations') loadAnimSetting();
+  if (name === 'projects') loadProjects();
+  if (name === 'blog') loadPosts();
+  if (name === 'settings') loadSiteSettings();
+  if (name === 'contact') loadContact();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type='success') {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  try {
+    // Try to get counts - these tables might not exist yet
+    const results = await Promise.allSettled([
+      sb.from('projects').select('*', { count: 'exact', head: true }),
+      sb.from('blog_posts').select('*', { count: 'exact', head: true }),
+      sb.from('blog_posts').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+      sb.from('blog_posts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+    ]);
+
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') console.error('dashboard query', i, 'failed:', r.reason);
+      else if (r.value?.error) console.error('dashboard query', i, 'error:', r.value.error);
+    });
+
+    document.getElementById('stat-projects').textContent = results[0].value?.count ?? '—';
+    document.getElementById('stat-posts').textContent = results[1].value?.count ?? '—';
+    document.getElementById('stat-published').textContent = results[2].value?.count ?? '—';
+    document.getElementById('stat-drafts').textContent = results[3].value?.count ?? '—';
+
+    const anyFailed = results.some(r => r.status === 'rejected' || r.value?.error);
+    document.getElementById('db-status').textContent = anyFailed
+      ? '⚠️ بعضی جداول در دسترس نیستن (کنسول رو چک کن)'
+      : '✅ Database متصل است';
+  } catch (e) {
+    console.error('loadDashboard fatal error:', e);
+    document.getElementById('db-status').textContent = '⚠️ خطا: ' + (e.message || 'نامشخص');
+  }
+}
+
+// Safety net: if for any reason loadDashboard() never finishes updating
+// this text (e.g. it never even got called), don't leave it spinning forever.
+setTimeout(() => {
+  const el = document.getElementById('db-status');
+  if (el && el.textContent.indexOf('در حال بررسی') !== -1) {
+    el.textContent = '⚠️ بارگذاری کامل نشد — صفحه رو رفرش کن';
+  }
+}, 8000);
+
+// ============================================================
+// SITE SETTINGS
+// ============================================================
+async function loadSiteSettings() {
+  try {
+    const { data } = await sb.from('site_settings').select('*').single();
+    if (data) {
+      document.getElementById('s-name').value = data.name || '';
+      document.getElementById('s-alias').value = data.alias || '';
+      document.getElementById('s-title').value = data.title || '';
+      document.getElementById('s-hero-desc').value = data.hero_desc || '';
+      document.getElementById('s-about').value = data.about || '';
+      document.getElementById('s-projects-count').value = data.projects_count || '';
+      document.getElementById('s-exp').value = data.experience || '';
+      document.getElementById('s-age').value = data.age || '';
+    }
+  } catch(e) { console.log('Settings not loaded:', e.message) }
+}
+
+async function saveSettings() {
+  const data = {
+    name: document.getElementById('s-name').value,
+    alias: document.getElementById('s-alias').value,
+    title: document.getElementById('s-title').value,
+    hero_desc: document.getElementById('s-hero-desc').value,
+    about: document.getElementById('s-about').value,
+    projects_count: document.getElementById('s-projects-count').value,
+    experience: document.getElementById('s-exp').value,
+    age: document.getElementById('s-age').value,
+    updated_at: new Date().toISOString()
+  };
+  const { error } = await sb.from('site_settings').upsert({ id: 1, ...data });
+  if (error) toast('خطا: ' + error.message, 'error');
+  else toast('✅ اطلاعات ذخیره شد');
+}
+
+// ============================================================
+// CONTACT
+// ============================================================
+async function loadContact() {
+  try {
+    const { data } = await sb.from('site_settings').select('*').single();
+    if (data) {
+      document.getElementById('c-phone').value = data.phone || '';
+      document.getElementById('c-email').value = data.contact_email || '';
+      document.getElementById('c-instagram').value = data.instagram || '';
+      document.getElementById('c-telegram').value = data.telegram || '';
+      document.getElementById('c-github').value = data.github || '';
+    }
+  } catch(e) {}
+}
+
+async function saveContact() {
+  const data = {
+    phone: document.getElementById('c-phone').value,
+    contact_email: document.getElementById('c-email').value,
+    instagram: document.getElementById('c-instagram').value,
+    telegram: document.getElementById('c-telegram').value,
+    github: document.getElementById('c-github').value,
+    updated_at: new Date().toISOString()
+  };
+  const { error } = await sb.from('site_settings').upsert({ id: 1, ...data });
+  if (error) toast('خطا: ' + error.message, 'error');
+  else toast('✅ اطلاعات تماس ذخیره شد');
+}
+
+// ============================================================
+// SKILLS
+// ============================================================
+async function loadSkills() {
+  const container = document.getElementById('skills-list');
+  try {
+    const { data } = await sb.from('skills').select('*').order('sort_order');
+    skillsData = data || defaultSkills();
+    renderSkills();
+  } catch(e) {
+    skillsData = defaultSkills();
+    renderSkills();
+  }
+}
+
+function defaultSkills() {
+  return [
+    { id: null, name: 'HTML', level: 92, sort_order: 1 },
+    { id: null, name: 'CSS', level: 88, sort_order: 2 },
+    { id: null, name: 'JavaScript', level: 85, sort_order: 3 },
+    { id: null, name: 'React', level: 80, sort_order: 4 },
+    { id: null, name: 'PWA Development', level: 90, sort_order: 5 },
+  ];
+}
+
+function renderSkills() {
+  const container = document.getElementById('skills-list');
+  container.innerHTML = '';
+  skillsData.forEach((skill, i) => {
+    const row = document.createElement('div');
+    row.className = 'skill-row';
+    row.innerHTML = `
+      <input type="text" value="${skill.name}" placeholder="نام مهارت" onchange="skillsData[${i}].name=this.value">
+      <input type="range" min="0" max="100" value="${skill.level}" oninput="skillsData[${i}].level=+this.value;this.nextElementSibling.textContent=this.value+'%'">
+      <span class="skill-pct">${skill.level}%</span>
+      <button class="btn btn-danger" style="padding:6px 10px;font-size:11px" onclick="removeSkill(${i})">حذف</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function addSkillRow() {
+  skillsData.push({ id: null, name: '', level: 80, sort_order: skillsData.length + 1 });
+  renderSkills();
+}
+
+function removeSkill(i) {
+  skillsData.splice(i, 1);
+  renderSkills();
+}
+
+async function saveSkills() {
+  try {
+    // Delete all and re-insert
+    await sb.from('skills').delete().neq('id', 0);
+    const inserts = skillsData.map((s, i) => ({
+      name: s.name, level: s.level, sort_order: i + 1
+    }));
+    const { error } = await sb.from('skills').insert(inserts);
+    if (error) throw error;
+    toast('✅ مهارت‌ها ذخیره شدند');
+  } catch(e) {
+    toast('خطا: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// GALLERY (عکس‌های اسلایدشو)
+// ============================================================
+let galleryData = [];
+const GALLERY_BUCKET = 'gallery';
+
+async function loadGallery() {
+  const grid = document.getElementById('gallery-grid');
+  try {
+    const { data, error } = await sb.from('gallery_photos').select('*').order('sort_order');
+    if (error) throw error;
+    galleryData = data || [];
+    renderGalleryGrid();
+  } catch (e) {
+    console.error('loadGallery error:', e);
+    grid.innerHTML = `<div class="gallery-empty">⚠️ خطا در خواندن جدول gallery_photos:<br><span dir="ltr" style="font-family:monospace;font-size:12px;color:#fca5a5">${(e && (e.message || e.error_description || JSON.stringify(e))) || 'نامشخص'}</span><br><br>اگه این پیام «relation does not exist» بود یعنی SQL درست اجرا نشده. اگه چیز دیگه‌ای بود (مثلاً permission) به سازنده‌ی سایت نشونش بده.</div>`;
+  }
+}
+
+function renderGalleryGrid() {
+  const grid = document.getElementById('gallery-grid');
+  if (!galleryData.length) {
+    grid.innerHTML = '<div class="gallery-empty">هنوز عکسی اضافه نکردی. از بالا یک یا چند عکس انتخاب کن.</div>';
+    return;
+  }
+  grid.innerHTML = galleryData.map((photo, i) => `
+    <div class="gallery-item">
+      <img src="${photo.url}" alt="عکس ${i + 1}" loading="lazy">
+      <div class="g-order">${i + 1}</div>
+      <div class="g-actions">
+        <button onclick="moveGalleryItem(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+        <button onclick="moveGalleryItem(${i}, 1)" ${i === galleryData.length - 1 ? 'disabled' : ''}>▼</button>
+        <button class="g-del" onclick="deleteGalleryItem(${i})">حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function moveGalleryItem(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= galleryData.length) return;
+  [galleryData[i], galleryData[j]] = [galleryData[j], galleryData[i]];
+  renderGalleryGrid();
+  try {
+    await Promise.all(galleryData.map((p, idx) =>
+      sb.from('gallery_photos').update({ sort_order: idx }).eq('id', p.id)
+    ));
+  } catch (e) {
+    toast('خطا در ذخیره ترتیب: ' + e.message, 'error');
+  }
+}
+
+async function deleteGalleryItem(i) {
+  const photo = galleryData[i];
+  if (!confirm('این عکس حذف بشه؟')) return;
+  try {
+    if (photo.path) {
+      await sb.storage.from(GALLERY_BUCKET).remove([photo.path]);
+    }
+    const { error } = await sb.from('gallery_photos').delete().eq('id', photo.id);
+    if (error) throw error;
+    galleryData.splice(i, 1);
+    renderGalleryGrid();
+    toast('🗑️ عکس حذف شد');
+  } catch (e) {
+    toast('خطا: ' + e.message, 'error');
+  }
+}
+
+async function handleGalleryUpload(files) {
+  if (!files || !files.length) return;
+  const statusEl = document.getElementById('gallery-upload-status');
+  const input = document.getElementById('gallery-file-input');
+  let nextOrder = galleryData.length;
+  let done = 0, failed = 0;
+
+  for (const file of Array.from(files)) {
+    statusEl.textContent = `در حال آپلود ${done + failed + 1} از ${files.length}...`;
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+      const path = `photos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const { error: upErr } = await sb.storage.from(GALLERY_BUCKET).upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+      if (upErr) throw upErr;
+
+      const { data: pub } = sb.storage.from(GALLERY_BUCKET).getPublicUrl(path);
+      const url = pub.publicUrl;
+
+      const { data: inserted, error: insErr } = await sb.from('gallery_photos')
+        .insert({ url, path, sort_order: nextOrder })
+        .select()
+        .single();
+      if (insErr) throw insErr;
+
+      galleryData.push(inserted);
+      nextOrder++;
+      done++;
+    } catch (e) {
+      failed++;
+      console.error(e);
+    }
+  }
+
+  renderGalleryGrid();
+  statusEl.textContent = failed
+    ? `✅ ${done} عکس آپلود شد — ⚠️ ${failed} تا ناموفق بود (کنسول رو چک کن)`
+    : `✅ ${done} عکس با موفقیت آپلود شد`;
+  toast(failed ? 'برخی آپلودها ناموفق بودند' : '✅ عکس‌ها آپلود شدند', failed ? 'error' : 'success');
+  input.value = '';
+}
+
+// ============================================================
+// MUSIC (موزیک پس‌زمینه)
+// ============================================================
+const MUSIC_BUCKET = 'music';
+let currentMusic = null;
+
+async function loadMusic() {
+  const box = document.getElementById('music-current');
+  try {
+    const { data, error } = await sb.from('site_music').select('*').eq('id', 1).single();
+    if (error) throw error;
+    currentMusic = data;
+    renderMusicStatus();
+  } catch (e) {
+    console.error('loadMusic error:', e);
+    box.innerHTML = `<div class="gallery-empty">⚠️ خطا در خواندن جدول site_music:<br><span dir="ltr" style="font-family:monospace;font-size:12px;color:#fca5a5">${(e && e.message) || 'نامشخص'}</span><br><br>اگه جدول ساخته نشده، فایل SETUP.sql رو (نسخه‌ی جدید که موزیک هم توشه) دوباره تو Supabase اجرا کن.</div>`;
+  }
+}
+
+function renderMusicStatus() {
+  const box = document.getElementById('music-current');
+  if (!currentMusic || !currentMusic.url) {
+    box.innerHTML = '<div class="gallery-empty">هنوز موزیکی آپلود نشده.</div>';
+    return;
+  }
+  box.innerHTML = `
+    <audio controls src="${currentMusic.url}" style="width:100%;margin-bottom:12px"></audio>
+    <button class="btn btn-danger" onclick="deleteMusic()">🗑️ حذف موزیک</button>
+  `;
+}
+
+async function handleMusicUpload(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  const statusEl = document.getElementById('music-upload-status');
+  const input = document.getElementById('music-file-input');
+
+  statusEl.textContent = 'در حال آپلود...';
+  try {
+    // Remove old file first (if any) so storage doesn't fill up with orphans.
+    if (currentMusic && currentMusic.path) {
+      await sb.storage.from(MUSIC_BUCKET).remove([currentMusic.path]);
+    }
+
+    const ext = (file.name.split('.').pop() || 'mp3').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
+    const path = `bg/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+    const { error: upErr } = await sb.storage.from(MUSIC_BUCKET).upload(path, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+    if (upErr) throw upErr;
+
+    const { data: pub } = sb.storage.from(MUSIC_BUCKET).getPublicUrl(path);
+    const url = pub.publicUrl;
+
+    const { data: updated, error: updErr } = await sb.from('site_music')
+      .update({ url, path, updated_at: new Date().toISOString() })
+      .eq('id', 1)
+      .select()
+      .single();
+    if (updErr) throw updErr;
+
+    currentMusic = updated;
+    renderMusicStatus();
+    statusEl.textContent = '✅ موزیک با موفقیت آپلود شد';
+    toast('✅ موزیک آپلود شد');
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = '⚠️ آپلود ناموفق بود: ' + (e.message || 'نامشخص');
+    toast('خطا در آپلود موزیک', 'error');
+  }
+  input.value = '';
+}
+
+async function deleteMusic() {
+  if (!confirm('موزیک پس‌زمینه حذف بشه؟')) return;
+  try {
+    if (currentMusic && currentMusic.path) {
+      await sb.storage.from(MUSIC_BUCKET).remove([currentMusic.path]);
+    }
+    const { data: updated, error } = await sb.from('site_music')
+      .update({ url: null, path: null, updated_at: new Date().toISOString() })
+      .eq('id', 1)
+      .select()
+      .single();
+    if (error) throw error;
+    currentMusic = updated;
+    renderMusicStatus();
+    toast('🗑️ موزیک حذف شد');
+  } catch (e) {
+    toast('خطا: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// CHAT (چت آنلاین)
+// ============================================================
+let chatConversations = [];
+let currentThreadId = null;
+let adminChatChannel = null;
+
+async function loadChatConversations() {
+  const box = document.getElementById('chat-conv-list');
+  try {
+    const { data, error } = await sb.from('chat_conversations')
+      .select('*')
+      .order('last_message_at', { ascending: false });
+    if (error) throw error;
+    chatConversations = data || [];
+    renderConvList();
+  } catch (e) {
+    console.error('loadChatConversations error:', e);
+    box.innerHTML = `<div class="gallery-empty">⚠️ خطا در خواندن گفتگوها:<br><span dir="ltr" style="font-family:monospace;font-size:12px;color:#fca5a5">${e.message || 'نامشخص'}</span><br><br>اگه جدول ساخته نشده، فایل SETUP.sql (نسخه‌ی جدید که چت هم توشه) رو تو Supabase اجرا کن.</div>`;
+  }
+}
+
+function renderConvList() {
+  const box = document.getElementById('chat-conv-list');
+  if (!chatConversations.length) {
+    box.innerHTML = '<div class="gallery-empty">هنوز هیچ گفتگویی شروع نشده.</div>';
+    return;
+  }
+  box.innerHTML = chatConversations.map(c => `
+    <div class="conv-row" onclick="openChatThread('${c.id}', '${(c.visitor_name || '').replace(/'/g, '')}', '${(c.visitor_phone || '').replace(/'/g, '')}')">
+      <div>
+        <div class="conv-name">${c.visitor_name || 'بدون نام'}</div>
+        <div class="conv-phone">${c.visitor_phone || ''}</div>
+      </div>
+      <div class="conv-time">${new Date(c.last_message_at).toLocaleString('fa-IR')}</div>
+    </div>
+  `).join('');
+}
+
+let adminReplyingTo = null;
+
+function adminSnippetFor(msg) {
+  if (msg.msg_type === 'text') return (msg.content || '').slice(0, 60);
+  if (msg.msg_type === 'image') return '📷 عکس';
+  if (msg.msg_type === 'video') return '🎥 ویدیو';
+  if (msg.msg_type === 'audio') return '🎤 ویس';
+  return '';
+}
+
+window.setAdminReplyTarget = function (msg) {
+  adminReplyingTo = { id: msg.id, snippet: adminSnippetFor(msg) };
+  document.getElementById('admin-reply-bar-text').textContent = adminReplyingTo.snippet;
+  document.getElementById('admin-reply-bar').style.display = 'flex';
+  document.getElementById('chat-thread-text-input').focus();
+};
+
+window.cancelAdminReply = function () {
+  adminReplyingTo = null;
+  document.getElementById('admin-reply-bar').style.display = 'none';
+};
+
+function renderAdminMsg(msg) {
+  const isAdmin = msg.sender === 'admin';
+  const row = document.createElement('div');
+  row.className = 'chat-msg-row ' + (isAdmin ? 'admin' : 'visitor');
+
+  const replyIcon = document.createElement('span');
+  replyIcon.className = 'chat-swipe-reply-icon';
+  replyIcon.textContent = '↩';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-msg ' + (isAdmin ? 'admin' : 'visitor');
+  let inner = '';
+  if (msg.reply_to_snippet) {
+    inner += `<div class="chat-msg-reply-quote" style="background:rgba(0,0,0,.2);border-right:3px solid var(--gold);border-radius:6px;padding:5px 8px;margin-bottom:5px;font-size:11.5px;opacity:.85">${msg.reply_to_snippet.replace(/</g, '&lt;')}</div>`;
+  }
+  if (msg.msg_type === 'text') {
+    inner += `<div>${(msg.content || '').replace(/</g, '&lt;')}</div>`;
+  } else if (msg.msg_type === 'image') {
+    inner += `<img src="${msg.media_url}" alt="عکس" style="max-width:100%;border-radius:8px">`;
+  } else if (msg.msg_type === 'video') {
+    inner += `<video src="${msg.media_url}" controls style="max-width:100%;border-radius:8px"></video>`;
+  } else if (msg.msg_type === 'audio') {
+    inner += `<audio src="${msg.media_url}" controls style="width:220px"></audio>`;
+  }
+  const time = new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+  bubble.innerHTML = inner + `<div class="chat-msg-time">${time}</div>`;
+
+  attachAdminSwipeToReply(bubble, row, msg);
+
+  if (isAdmin) { row.appendChild(replyIcon); row.appendChild(bubble); }
+  else { row.appendChild(bubble); row.appendChild(replyIcon); }
+  return row;
+}
+
+function attachAdminSwipeToReply(bubble, row, msg) {
+  let startX = 0, dx = 0, dragging = false;
+  const threshold = 46;
+  bubble.addEventListener('pointerdown', (e) => { dragging = true; startX = e.clientX; bubble.setPointerCapture(e.pointerId); });
+  bubble.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    dx = e.clientX - startX;
+    const clamped = Math.max(-70, Math.min(70, dx));
+    bubble.style.transform = `translateX(${clamped}px)`;
+    row.classList.toggle('swiping', Math.abs(clamped) > 12);
+  });
+  const endDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    bubble.style.transform = '';
+    row.classList.remove('swiping');
+    if (Math.abs(dx) > threshold) setAdminReplyTarget(msg);
+    dx = 0;
+  };
+  bubble.addEventListener('pointerup', endDrag);
+  bubble.addEventListener('pointercancel', endDrag);
+  bubble.addEventListener('pointerleave', () => { if (dragging) endDrag(); });
+}
+
+window.openChatThread = async function (convId, name, phone) {
+  currentThreadId = convId;
+  cancelAdminReply();
+  document.getElementById('chat-thread-name').textContent = name || 'بدون نام';
+  document.getElementById('chat-thread-phone').textContent = phone || '';
+  document.getElementById('chat-thread-overlay').classList.add('show');
+  await loadThreadMessages();
+  subscribeAdminChat();
+};
+
+window.closeChatThread = function () {
+  document.getElementById('chat-thread-overlay').classList.remove('show');
+  if (adminChatChannel) {
+    sb.removeChannel(adminChatChannel);
+    adminChatChannel = null;
+  }
+  currentThreadId = null;
+  loadChatConversations();
+};
+
+async function loadThreadMessages() {
+  const box = document.getElementById('chat-thread-messages');
+  box.innerHTML = '';
+  try {
+    const { data, error } = await sb.from('chat_messages')
+      .select('*')
+      .eq('conversation_id', currentThreadId)
+      .order('created_at');
+    if (error) throw error;
+    (data || []).forEach(m => box.appendChild(renderAdminMsg(m)));
+    box.scrollTop = box.scrollHeight;
+  } catch (e) {
+    console.error('loadThreadMessages error:', e);
+  }
+}
+
+function subscribeAdminChat() {
+  if (adminChatChannel) sb.removeChannel(adminChatChannel);
+  adminChatChannel = sb.channel('admin-chat-' + currentThreadId)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'chat_messages',
+      filter: 'conversation_id=eq.' + currentThreadId
+    }, (payload) => {
+      const box = document.getElementById('chat-thread-messages');
+      box.appendChild(renderAdminMsg(payload.new));
+      box.scrollTop = box.scrollHeight;
+    })
+    .subscribe();
+}
+
+window.sendAdminChatText = async function () {
+  const input = document.getElementById('chat-thread-text-input');
+  const text = input.value.trim();
+  if (!text || !currentThreadId) return;
+  input.value = '';
+  const replyData = adminReplyingTo ? { reply_to_id: adminReplyingTo.id, reply_to_snippet: adminReplyingTo.snippet } : {};
+  cancelAdminReply();
+  try {
+    await sb.from('chat_messages').insert({
+      conversation_id: currentThreadId, sender: 'admin', msg_type: 'text', content: text, ...replyData
+    });
+    await sb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', currentThreadId);
+  } catch (e) {
+    toast('خطا در ارسال پیام: ' + e.message, 'error');
+  }
+};
+
+window.handleAdminChatFileUpload = async function (files) {
+  if (!files || !files.length || !currentThreadId) return;
+  const file = files[0];
+  const kind = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'audio';
+  const replyData = adminReplyingTo ? { reply_to_id: adminReplyingTo.id, reply_to_snippet: adminReplyingTo.snippet } : {};
+  cancelAdminReply();
+  try {
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `admin/${currentThreadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: upErr } = await sb.storage.from('chat-media').upload(path, file);
+    if (upErr) throw upErr;
+    const { data: pub } = sb.storage.from('chat-media').getPublicUrl(path);
+    await sb.from('chat_messages').insert({
+      conversation_id: currentThreadId, sender: 'admin', msg_type: kind, media_url: pub.publicUrl, media_path: path, ...replyData
+    });
+    await sb.from('chat_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', currentThreadId);
+  } catch (e) {
+    toast('خطا در ارسال فایل: ' + e.message, 'error');
+  }
+  document.getElementById('chat-thread-file-input').value = '';
+};
+
+// ============================================================
+// ANIMATIONS (انیمیشن ورود)
+// ============================================================
+const ANIM_PRESETS = [
+  { id: 'fade-up', label: '⬆️ محو + بالا آمدن' },
+  { id: 'fade-in', label: '👻 محو ساده' },
+  { id: 'zoom-in', label: '🔍 بزرگ‌نمایی' },
+  { id: 'slide-left', label: '⬅️ لغزش از راست' },
+  { id: 'slide-right', label: '➡️ لغزش از چپ' },
+  { id: 'blur-in', label: '🌫️ واضح شدن از تار' },
+  { id: 'flip-up', label: '🔄 چرخش سه‌بعدی' },
+  { id: 'glitch-in', label: '⚡ گلیچ هکری' },
+  { id: 'bounce-in', label: '🎾 پرش فنری' },
+  { id: 'rotate-in', label: '🌀 چرخش مورب' },
+];
+let selectedAnim = 'fade-up';
+
+async function loadAnimSetting() {
+  try {
+    const { data } = await sb.from('site_settings').select('scroll_anim').eq('id', 1).single();
+    selectedAnim = (data && data.scroll_anim) || 'fade-up';
+  } catch (e) {
+    console.error('loadAnimSetting error:', e);
+  }
+  renderAnimGrid();
+}
+
+function renderAnimGrid() {
+  const grid = document.getElementById('anim-grid');
+  grid.innerHTML = ANIM_PRESETS.map(p => `
+    <div class="anim-card ${p.id === selectedAnim ? 'selected' : ''}" id="anim-card-${p.id}" onclick="selectAndPreviewAnim('${p.id}')">
+      <div class="anim-demo-box" id="anim-demo-${p.id}">✦</div>
+      <div class="anim-card-label">${p.label}</div>
+    </div>
+  `).join('');
+}
+
+window.selectAndPreviewAnim = function (id) {
+  selectedAnim = id;
+  document.querySelectorAll('.anim-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('anim-card-' + id).classList.add('selected');
+
+  // Replay the demo animation on the clicked card.
+  const box = document.getElementById('anim-demo-' + id);
+  box.classList.remove('play-' + id);
+  void box.offsetWidth; // force reflow so the animation restarts
+  box.classList.add('play-' + id);
+};
+
+window.saveAnimSetting = async function () {
+  const statusEl = document.getElementById('anim-save-status');
+  statusEl.textContent = 'در حال ذخیره...';
+  try {
+    const { error } = await sb.from('site_settings').update({ scroll_anim: selectedAnim }).eq('id', 1);
+    if (error) throw error;
+    statusEl.textContent = '✅ ذخیره شد — رو سایت اصلی اعمال شد';
+    toast('✅ انیمیشن ذخیره شد');
+  } catch (e) {
+    statusEl.textContent = '⚠️ خطا: ' + (e.message || 'نامشخص');
+    toast('خطا در ذخیره', 'error');
+  }
+};
+
+// ============================================================
+// PROJECTS
+// ============================================================
+async function loadProjects() {
+  const container = document.getElementById('projects-table');
+  container.innerHTML = '<div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div>';
+  try {
+    const { data } = await sb.from('projects').select('*').order('sort_order');
+    projectsData = data || [];
+    renderProjectsTable();
+  } catch(e) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:1rem">جدول projects هنوز ساخته نشده. SQL را اجرا کنید.</p>';
+  }
+}
+
+function renderProjectsTable() {
+  const container = document.getElementById('projects-table');
+  if (!projectsData.length) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:1rem">هیچ پروژه‌ای ثبت نشده.</p>';
+    return;
+  }
+  let html = `<table><thead><tr>
+    <th>عنوان</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th>
+  </tr></thead><tbody>`;
+  projectsData.forEach(p => {
+    html += `<tr>
+      <td>${p.title}</td>
+      <td><span class="badge ${p.status==='published'?'badge-green':'badge-gray'}">${p.status==='published'?'منتشر':'مخفی'}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('fa-IR')}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="editProject('${p.id}')">ویرایش</button>
+        <button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="deleteProject('${p.id}')">حذف</button>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function showAddProject() {
+  document.getElementById('project-form').style.display = 'block';
+  document.getElementById('project-form-title').textContent = 'پروژه جدید';
+  document.getElementById('p-id').value = '';
+  ['p-title','p-subtitle','p-desc','p-url','p-apk','p-tech'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('p-status').value = 'published';
+  document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
+}
+
+function editProject(id) {
+  const p = projectsData.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('project-form').style.display = 'block';
+  document.getElementById('project-form-title').textContent = 'ویرایش پروژه';
+  document.getElementById('p-id').value = p.id;
+  document.getElementById('p-title').value = p.title || '';
+  document.getElementById('p-subtitle').value = p.subtitle || '';
+  document.getElementById('p-desc').value = p.description || '';
+  document.getElementById('p-url').value = p.demo_url || '';
+  document.getElementById('p-apk').value = p.apk_url || '';
+  document.getElementById('p-tech').value = (p.technologies || []).join(', ');
+  document.getElementById('p-status').value = p.status || 'published';
+  document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelProject() {
+  document.getElementById('project-form').style.display = 'none';
+}
+
+async function saveProject() {
+  const id = document.getElementById('p-id').value;
+  const data = {
+    title: document.getElementById('p-title').value,
+    subtitle: document.getElementById('p-subtitle').value,
+    description: document.getElementById('p-desc').value,
+    demo_url: document.getElementById('p-url').value,
+    apk_url: document.getElementById('p-apk').value,
+    technologies: document.getElementById('p-tech').value.split(',').map(s=>s.trim()).filter(Boolean),
+    status: document.getElementById('p-status').value,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    if (id) {
+      const { error } = await sb.from('projects').update(data).eq('id', id);
+      if (error) throw error;
+    } else {
+      data.created_at = new Date().toISOString();
+      data.sort_order = projectsData.length + 1;
+      const { error } = await sb.from('projects').insert(data);
+      if (error) throw error;
+    }
+    toast('✅ پروژه ذخیره شد');
+    cancelProject();
+    loadProjects();
+  } catch(e) {
+    toast('خطا: ' + e.message, 'error');
+  }
+}
+
+async function deleteProject(id) {
+  if (!confirm('آیا مطمئنید؟ این عمل برگشت‌پذیر نیست.')) return;
+  const { error } = await sb.from('projects').delete().eq('id', id);
+  if (error) toast('خطا: ' + error.message, 'error');
+  else { toast('✅ پروژه حذف شد'); loadProjects(); }
+}
+
+// ============================================================
+// BLOG
+// ============================================================
+async function loadPosts() {
+  const container = document.getElementById('posts-table');
+  container.innerHTML = '<div class="loading"><div class="spinner-lg"></div></div>';
+  try {
+    const { data } = await sb.from('blog_posts').select('*').order('created_at', { ascending: false });
+    postsData = data || [];
+    renderPostsTable();
+  } catch(e) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:1rem">جدول blog_posts هنوز ساخته نشده. SQL را اجرا کنید.</p>';
+  }
+}
+
+function renderPostsTable() {
+  const container = document.getElementById('posts-table');
+  if (!postsData.length) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:1rem">هیچ مقاله‌ای ثبت نشده.</p>';
+    return;
+  }
+  let html = `<table><thead><tr>
+    <th>عنوان</th><th>وضعیت</th><th>دسته</th><th>تاریخ</th><th>عملیات</th>
+  </tr></thead><tbody>`;
+  postsData.forEach(p => {
+    html += `<tr>
+      <td>${p.title}</td>
+      <td><span class="badge ${p.status==='published'?'badge-green':'badge-gray'}">${p.status==='published'?'منتشر':'پیش‌نویس'}</span></td>
+      <td style="font-size:12px">${p.category||'—'}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('fa-IR')}</td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editPost('${p.id}')">ویرایش</button>
+        <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deletePost('${p.id}')">حذف</button>
+        <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="togglePublish('${p.id}','${p.status}')">${p.status==='published'?'مخفی':'انتشار'}</button>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function showAddPost() {
+  document.getElementById('posts-list-section').style.display = 'none';
+  document.getElementById('post-editor').style.display = 'block';
+  document.getElementById('editor-title').textContent = 'مقاله جدید';
+  document.getElementById('post-id').value = '';
+  ['post-title','post-slug','post-excerpt','post-content','post-category','post-tags',
+   'post-seo-title','post-seo-desc','post-seo-kw','post-seo-canonical','post-og-title','post-og-desc']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('post-status').value = 'draft';
+  document.getElementById('post-noindex').checked = false;
+
+  // Auto-generate slug from title
+  document.getElementById('post-title').addEventListener('input', function() {
+    const slug = this.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    document.getElementById('post-slug').value = slug;
+  });
+}
+
+function editPost(id) {
+  const p = postsData.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('posts-list-section').style.display = 'none';
+  document.getElementById('post-editor').style.display = 'block';
+  document.getElementById('editor-title').textContent = 'ویرایش مقاله';
+  document.getElementById('post-id').value = p.id;
+  document.getElementById('post-title').value = p.title || '';
+  document.getElementById('post-slug').value = p.slug || '';
+  document.getElementById('post-excerpt').value = p.excerpt || '';
+  document.getElementById('post-content').value = p.content || '';
+  document.getElementById('post-category').value = p.category || '';
+  document.getElementById('post-tags').value = (p.tags||[]).join(', ');
+  document.getElementById('post-status').value = p.status || 'draft';
+  const seo = p.seo_data || {};
+  document.getElementById('post-seo-title').value = seo.title || '';
+  document.getElementById('post-seo-desc').value = seo.description || '';
+  document.getElementById('post-seo-kw').value = seo.keyword || '';
+  document.getElementById('post-seo-canonical').value = seo.canonical || '';
+  document.getElementById('post-og-title').value = seo.og_title || '';
+  document.getElementById('post-og-desc').value = seo.og_desc || '';
+  document.getElementById('post-noindex').checked = seo.noindex || false;
+}
+
+function cancelPost() {
+  document.getElementById('post-editor').style.display = 'none';
+  document.getElementById('posts-list-section').style.display = 'block';
+}
+
+async function savePost(statusOverride) {
+  const id = document.getElementById('post-id').value;
+  const status = statusOverride || document.getElementById('post-status').value;
+  const title = document.getElementById('post-title').value;
+
+  const seo_data = {
+    title: document.getElementById('post-seo-title').value || title,
+    description: document.getElementById('post-seo-desc').value,
+    keyword: document.getElementById('post-seo-kw').value,
+    canonical: document.getElementById('post-seo-canonical').value,
+    og_title: document.getElementById('post-og-title').value || title,
+    og_desc: document.getElementById('post-og-desc').value,
+    noindex: document.getElementById('post-noindex').checked
+  };
+
+  const data = {
+    title,
+    slug: document.getElementById('post-slug').value || title.toLowerCase().replace(/\s+/g,'-'),
+    excerpt: document.getElementById('post-excerpt').value,
+    content: document.getElementById('post-content').value,
+    category: document.getElementById('post-category').value,
+    tags: document.getElementById('post-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
+    status,
+    seo_data,
+    updated_at: new Date().toISOString()
+  };
+
+  if (status === 'published' && !data.published_at) {
+    data.published_at = new Date().toISOString();
+  }
+
+  try {
+    if (id) {
+      const { error } = await sb.from('blog_posts').update(data).eq('id', id);
+      if (error) throw error;
+    } else {
+      data.created_at = new Date().toISOString();
+      const { error } = await sb.from('blog_posts').insert(data);
+      if (error) throw error;
+    }
+    toast(status === 'published' ? '🚀 مقاله منتشر شد' : '💾 پیش‌نویس ذخیره شد');
+    cancelPost();
+    loadPosts();
+  } catch(e) {
+    toast('خطا: ' + e.message, 'error');
+  }
+}
+
+async function togglePublish(id, currentStatus) {
+  const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+  const { error } = await sb.from('blog_posts').update({
+    status: newStatus,
+    published_at: newStatus === 'published' ? new Date().toISOString() : null
+  }).eq('id', id);
+  if (error) toast('خطا: ' + error.message, 'error');
+  else { toast(newStatus === 'published' ? '🚀 منتشر شد' : '✅ مخفی شد'); loadPosts(); }
+}
+
+async function deletePost(id) {
+  if (!confirm('آیا مطمئنید؟ مقاله حذف خواهد شد.')) return;
+  const { error } = await sb.from('blog_posts').delete().eq('id', id);
+  if (error) toast('خطا: ' + error.message, 'error');
+  else { toast('✅ مقاله حذف شد'); loadPosts(); }
+}
+
+function previewPost() {
+  const title = document.getElementById('post-title').value;
+  const content = document.getElementById('post-content').value;
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+    <title>${title}</title>
+    <style>body{font-family:sans-serif;max-width:800px;margin:2rem auto;padding:1rem;line-height:1.8}
+    h1,h2,h3{color:#222}code{background:#f3f3f3;padding:2px 6px;border-radius:4px}
+    blockquote{border-right:4px solid #C9A84C;padding-right:1rem;color:#666;margin:1rem 0}</style>
+    </head><body><h1>${title}</h1><hr>${content}</body></html>`);
+}
+
+// Editor helpers
+function fmt(cmd) {
+  const ta = document.getElementById('post-content');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end);
+  const tags = { bold: ['<strong>','</strong>'], italic: ['<em>','</em>'] };
+  const [o, c] = tags[cmd];
+  ta.value = ta.value.substring(0, start) + o + sel + c + ta.value.substring(end);
+}
+function insertTag(tag) {
+  const ta = document.getElementById('post-content');
+  const pos = ta.selectionEnd;
+  const insert = `\n<${tag}></${tag}>\n`;
+  ta.value = ta.value.substring(0, pos) + insert + ta.value.substring(pos);
+}
+function insertLink() {
+  const url = prompt('آدرس لینک:');
+  if (!url) return;
+  const ta = document.getElementById('post-content');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end) || 'متن لینک';
+  ta.value = ta.value.substring(0, start) + `<a href="${url}">${sel}</a>` + ta.value.substring(end);
+}
+function insertList(type) {
+  const ta = document.getElementById('post-content');
+  const pos = ta.selectionEnd;
+  ta.value = ta.value.substring(0, pos) + `\n<${type}>\n  <li>آیتم اول</li>\n  <li>آیتم دوم</li>\n</${type}>\n` + ta.value.substring(pos);
+}
+
+// ============================================================
+// START
+// ============================================================
+// Init — load config.js dynamically first (cache-proof), then start.
+(function loadConfigThenInit() {
+  const s = document.createElement('script');
+  s.src = 'config.js?t=' + Date.now();
+  s.onload = authGuard;
+  s.onerror = function () {
+    alert('config.js failed to load (network error or wrong path)');
+  };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>

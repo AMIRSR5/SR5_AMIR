@@ -274,6 +274,36 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .gallery-item .g-actions button.g-del:hover{background:rgba(239,68,68,0.35)}
 .gallery-empty{grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;font-size:13px}
 
+.anim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.anim-card{border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:border-color .2s}
+.anim-card:hover{border-color:rgba(201,168,76,0.4)}
+.anim-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.08)}
+.anim-demo-box{width:100%;height:60px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;opacity:1}
+.anim-card-label{font-size:12px;color:var(--text)}
+.anim-card.selected .anim-card-label{color:var(--gold);font-weight:700}
+
+/* demo playback states — mirror the 10 site presets */
+.anim-demo-box.play-fade-up{animation:demoFadeUp .7s ease}
+@keyframes demoFadeUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+.anim-demo-box.play-fade-in{animation:demoFadeIn .8s ease}
+@keyframes demoFadeIn{0%{opacity:0}100%{opacity:1}}
+.anim-demo-box.play-zoom-in{animation:demoZoomIn .6s ease}
+@keyframes demoZoomIn{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
+.anim-demo-box.play-slide-left{animation:demoSlideLeft .6s ease}
+@keyframes demoSlideLeft{0%{opacity:0;transform:translateX(35px)}100%{opacity:1;transform:translateX(0)}}
+.anim-demo-box.play-slide-right{animation:demoSlideRight .6s ease}
+@keyframes demoSlideRight{0%{opacity:0;transform:translateX(-35px)}100%{opacity:1;transform:translateX(0)}}
+.anim-demo-box.play-blur-in{animation:demoBlurIn .7s ease}
+@keyframes demoBlurIn{0%{opacity:0;filter:blur(10px)}100%{opacity:1;filter:blur(0)}}
+.anim-demo-box.play-flip-up{animation:demoFlipUp .6s ease}
+@keyframes demoFlipUp{0%{opacity:0;transform:perspective(500px) rotateX(50deg)}100%{opacity:1;transform:perspective(500px) rotateX(0)}}
+.anim-demo-box.play-glitch-in{animation:demoGlitch .5s steps(2,end)}
+@keyframes demoGlitch{0%{opacity:0;transform:translate(-6px,0)}20%{opacity:1;transform:translate(6px,0)}40%{transform:translate(-4px,0)}60%{transform:translate(4px,0)}80%{transform:translate(-2px,0)}100%{transform:translate(0,0)}}
+.anim-demo-box.play-bounce-in{animation:demoBounce .5s cubic-bezier(.34,1.8,.64,1)}
+@keyframes demoBounce{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
+.anim-demo-box.play-rotate-in{animation:demoRotate .6s ease}
+@keyframes demoRotate{0%{opacity:0;transform:rotate(-20deg) scale(.85)}100%{opacity:1;transform:rotate(0) scale(1)}}
+
 .conv-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;cursor:pointer;background:rgba(255,255,255,0.02)}
 .conv-row:hover{background:rgba(201,168,76,0.08)}
 .conv-row.unread{border-color:rgba(201,168,76,0.5);background:rgba(201,168,76,0.06)}
@@ -349,6 +379,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </a>
   <a class="nav-item" onclick="showPage('chat')" href="#">
     <span class="nav-icon">💬</span> چت آنلاین
+  </a>
+  <a class="nav-item" onclick="showPage('animations')" href="#">
+    <span class="nav-icon">✨</span> انیمیشن ورود
   </a>
   <a class="nav-item" onclick="showPage('skills')" href="#">
     <span class="nav-icon">⚡</span> مهارت‌ها
@@ -551,6 +584,17 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="page-sub">لیست گفتگوهایی که کاربران تو سایت باهات شروع کردن</div>
     <div class="section-card">
       <div id="chat-conv-list"><div class="loading"><div class="spinner-lg"></div>در حال بارگذاری...</div></div>
+    </div>
+  </div>
+
+  <!-- ANIMATIONS -->
+  <div class="page" id="page-animations">
+    <div class="page-title">انیمیشن ورود</div>
+    <div class="page-sub">رو هر کارت بزن تا پیش‌نمایشش رو ببینی، بعد همونی که خوشت اومد رو انتخاب و ذخیره کن</div>
+    <div class="section-card">
+      <div class="anim-grid" id="anim-grid"></div>
+      <button class="btn btn-primary" style="margin-top:1.25rem;width:100%" onclick="saveAnimSetting()">✅ ذخیره و اعمال روی سایت</button>
+      <div id="anim-save-status" style="font-size:13px;color:var(--text-muted);margin-top:8px;text-align:center"></div>
     </div>
   </div>
 
@@ -839,6 +883,7 @@ function showPage(name) {
   if (name === 'gallery') loadGallery();
   if (name === 'music') loadMusic();
   if (name === 'chat') loadChatConversations();
+  if (name === 'animations') loadAnimSetting();
   if (name === 'projects') loadProjects();
   if (name === 'blog') loadPosts();
   if (name === 'settings') loadSiteSettings();
@@ -1455,6 +1500,69 @@ window.handleAdminChatFileUpload = async function (files) {
     toast('خطا در ارسال فایل: ' + e.message, 'error');
   }
   document.getElementById('chat-thread-file-input').value = '';
+};
+
+// ============================================================
+// ANIMATIONS (انیمیشن ورود)
+// ============================================================
+const ANIM_PRESETS = [
+  { id: 'fade-up', label: '⬆️ محو + بالا آمدن' },
+  { id: 'fade-in', label: '👻 محو ساده' },
+  { id: 'zoom-in', label: '🔍 بزرگ‌نمایی' },
+  { id: 'slide-left', label: '⬅️ لغزش از راست' },
+  { id: 'slide-right', label: '➡️ لغزش از چپ' },
+  { id: 'blur-in', label: '🌫️ واضح شدن از تار' },
+  { id: 'flip-up', label: '🔄 چرخش سه‌بعدی' },
+  { id: 'glitch-in', label: '⚡ گلیچ هکری' },
+  { id: 'bounce-in', label: '🎾 پرش فنری' },
+  { id: 'rotate-in', label: '🌀 چرخش مورب' },
+];
+let selectedAnim = 'fade-up';
+
+async function loadAnimSetting() {
+  try {
+    const { data } = await sb.from('site_settings').select('scroll_anim').eq('id', 1).single();
+    selectedAnim = (data && data.scroll_anim) || 'fade-up';
+  } catch (e) {
+    console.error('loadAnimSetting error:', e);
+  }
+  renderAnimGrid();
+}
+
+function renderAnimGrid() {
+  const grid = document.getElementById('anim-grid');
+  grid.innerHTML = ANIM_PRESETS.map(p => `
+    <div class="anim-card ${p.id === selectedAnim ? 'selected' : ''}" id="anim-card-${p.id}" onclick="selectAndPreviewAnim('${p.id}')">
+      <div class="anim-demo-box" id="anim-demo-${p.id}">✦</div>
+      <div class="anim-card-label">${p.label}</div>
+    </div>
+  `).join('');
+}
+
+window.selectAndPreviewAnim = function (id) {
+  selectedAnim = id;
+  document.querySelectorAll('.anim-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('anim-card-' + id).classList.add('selected');
+
+  // Replay the demo animation on the clicked card.
+  const box = document.getElementById('anim-demo-' + id);
+  box.classList.remove('play-' + id);
+  void box.offsetWidth; // force reflow so the animation restarts
+  box.classList.add('play-' + id);
+};
+
+window.saveAnimSetting = async function () {
+  const statusEl = document.getElementById('anim-save-status');
+  statusEl.textContent = 'در حال ذخیره...';
+  try {
+    const { error } = await sb.from('site_settings').update({ scroll_anim: selectedAnim }).eq('id', 1);
+    if (error) throw error;
+    statusEl.textContent = '✅ ذخیره شد — رو سایت اصلی اعمال شد';
+    toast('✅ انیمیشن ذخیره شد');
+  } catch (e) {
+    statusEl.textContent = '⚠️ خطا: ' + (e.message || 'نامشخص');
+    toast('خطا در ذخیره', 'error');
+  }
 };
 
 // ============================================================

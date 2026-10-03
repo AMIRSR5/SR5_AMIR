@@ -615,6 +615,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="section-card" id="project-form" style="display:none">
       <h3 id="project-form-title">پروژه جدید</h3>
       <input type="hidden" id="p-id">
+      <div class="form-group">
+        <label>آیکون پروژه</label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <img id="p-icon-preview" src="../icon.png" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(201,168,76,0.3)">
+          <input type="file" accept="image/*" onchange="handleProjectIconUpload(this.files)">
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label>عنوان پروژه</label>
@@ -1604,12 +1611,33 @@ function renderProjectsTable() {
   container.innerHTML = html;
 }
 
+let currentProjectIconUrl = '';
+
+async function handleProjectIconUpload(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  try {
+    const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+    const path = `project-icons/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: upErr } = await sb.storage.from('gallery').upload(path, file, { cacheControl: '3600' });
+    if (upErr) throw upErr;
+    const { data: pub } = sb.storage.from('gallery').getPublicUrl(path);
+    currentProjectIconUrl = pub.publicUrl;
+    document.getElementById('p-icon-preview').src = currentProjectIconUrl;
+    toast('✅ آیکون آپلود شد');
+  } catch (e) {
+    toast('خطا در آپلود آیکون: ' + e.message, 'error');
+  }
+}
+
 function showAddProject() {
   document.getElementById('project-form').style.display = 'block';
   document.getElementById('project-form-title').textContent = 'پروژه جدید';
   document.getElementById('p-id').value = '';
   ['p-title','p-subtitle','p-desc','p-url','p-apk','p-tech'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('p-status').value = 'published';
+  currentProjectIconUrl = '';
+  document.getElementById('p-icon-preview').src = '../icon.png';
   document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
 }
 
@@ -1626,6 +1654,8 @@ function editProject(id) {
   document.getElementById('p-apk').value = p.apk_url || '';
   document.getElementById('p-tech').value = (p.technologies || []).join(', ');
   document.getElementById('p-status').value = p.status || 'published';
+  currentProjectIconUrl = p.icon_url || '';
+  document.getElementById('p-icon-preview').src = currentProjectIconUrl || '../icon.png';
   document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
 }
 
@@ -1643,6 +1673,7 @@ async function saveProject() {
     apk_url: document.getElementById('p-apk').value,
     technologies: document.getElementById('p-tech').value.split(',').map(s=>s.trim()).filter(Boolean),
     status: document.getElementById('p-status').value,
+    icon_url: currentProjectIconUrl || null,
     updated_at: new Date().toISOString()
   };
 

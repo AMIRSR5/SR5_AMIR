@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-10-29T21:23:08.926Z",
+  "saved_at": "2026-10-29T21:51:04.241Z",
   "data": {
     "site_settings": [
       {
@@ -7,9 +7,9 @@
         "name": "امیرحسین سرافراز",
         "alias": "AMIR_SR5",
         "title": "Full-Stack Developer & PWA Specialist",
-        "hero_desc": "امیرحسین سرافراز با لطف و یاری خدا موفق به انجام با کیفیت ترین پروژه ها شده",
-        "about": "",
-        "projects_count": "+۱۰",
+        "hero_desc": "توسعه‌دهنده فول‌استک و متخصص PWA — خلق رابط‌های وب با دقت مهندسی و حرکت‌های هدفمند",
+        "about": "۲۰ ساله با حدود ۲ سال تجربه. عاشق ساخت وب‌سایت‌ها و اپلیکیشن‌های سریع، زیبا و کاربردی هستم و تخصصم در HTML، CSS، JavaScript، React و توسعه PWA است.\n\nاز فروشگاه‌های آنلاین و پنل‌های مدیریت گرفته تا پیام‌رسان و ابزارهای هوشمند، پروژه‌هایی ساخته‌ام که هم ظاهر حرفه‌ای دارند و هم روی موبایل بی‌نقص کار می‌کنند. باور دارم یک سایت خوب فقط قشنگ نیست؛ باید سریع، ساده و قابل اعتماد باشد.",
+        "projects_count": "+۲۰",
         "experience": "۲",
         "age": "۲۰",
         "phone": "09037241969",
@@ -17,7 +17,7 @@
         "instagram": "AMIR_SR5_OFFICIAL",
         "telegram": "Sr5_admin",
         "github": "SR5",
-        "updated_at": "2026-10-29T20:47:12.046+00:00",
+        "updated_at": "2026-10-29T21:49:09.387+00:00",
         "about_video_url": "https://rsyglfecaxbuqxfcwtpl.supabase.co/storage/v1/object/public/videos/about-video-1786388669815.mov",
         "scroll_anim": "blur-in"
       }

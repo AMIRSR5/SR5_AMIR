@@ -5,16 +5,16 @@
       "en": "Amirhossein Sarafraz"
     },
     "tagline": {
-      "fa": "امیرحسین سرافراز با لطف و یاری خدا موفق به انجام با کیفیت ترین پروژه ها شده",
+      "fa": "توسعه‌دهنده فول‌استک و متخصص PWA — خلق رابط‌های وب با دقت مهندسی و حرکت‌های هدفمند",
       "en": "Full-Stack Developer & PWA specialist — building web interfaces with engineering precision and purposeful motion."
     },
     "about": {
-      "fa": "در دنیایی که هر خط کد می‌تواند آینده را دگرگون کند، امیرحسین سرافراز با ۲۰ سال سن ثابت کرده که سن تنها یک عدد است. با بیش از ۲ سال تجربه عملی در توسعه وب و موبایل، پروژه‌های واقعی برای بازار ایران ساخته.",
+      "fa": "۲۰ ساله با حدود ۲ سال تجربه. عاشق ساخت وب‌سایت‌ها و اپلیکیشن‌های سریع، زیبا و کاربردی هستم و تخصصم در HTML، CSS، JavaScript، React و توسعه PWA است.\n\nاز فروشگاه‌های آنلاین و پنل‌های مدیریت گرفته تا پیام‌رسان و ابزارهای هوشمند، پروژه‌هایی ساخته‌ام که هم ظاهر حرفه‌ای دارند و هم روی موبایل بی‌نقص کار می‌کنند. باور دارم یک سایت خوب فقط قشنگ نیست؛ باید سریع، ساده و قابل اعتماد باشد.",
       "en": "In a world where every line of code can reshape the future, Amirhossein Sarafraz, at just 20, has proven that age is only a number. With over 2 years of hands-on web and mobile development, he has built real projects for the Iranian market."
     },
     "stats": [
       {
-        "value": "+۱۰",
+        "value": "+۲۰",
         "label": {
           "fa": "پروژه فعال",
           "en": "Active projects"
@@ -65,7 +65,7 @@
     {
       "name": "JavaScript",
       "level": 85,
-      "icon": "uploads/sb/skill-1786449107320-2.jpeg"
+      "icon": "https://rsyglfecaxbuqxfcwtpl.supabase.co/storage/v1/object/public/skill-icons/skill-1786449107320-2.jpeg"
     },
     {
       "name": "React",

@@ -5,7 +5,7 @@
       "en": "Amirhossein Sarafraz"
     },
     "tagline": {
-      "fa": "برنامه‌نویس فول‌استک و متخصص PWA — رابط‌های وب را با دقتِ مهندسی و حرکتِ درست می‌سازم.",
+      "fa": "امیرحسین سرافراز با لطف و یاری خدا موفق به انجام با کیفیت ترین پروژه ها شده",
       "en": "Full-Stack Developer & PWA specialist — building web interfaces with engineering precision and purposeful motion."
     },
     "about": {
@@ -14,21 +14,21 @@
     },
     "stats": [
       {
-        "value": "10+",
+        "value": "+۱۰",
         "label": {
           "fa": "پروژه فعال",
           "en": "Active projects"
         }
       },
       {
-        "value": "2",
+        "value": "۲",
         "label": {
           "fa": "سال سابقه",
           "en": "Years of experience"
         }
       },
       {
-        "value": "20",
+        "value": "۲۰",
         "label": {
           "fa": "سال سن",
           "en": "Years old"
@@ -41,38 +41,64 @@
           "en": "Core technologies"
         }
       }
-    ]
+    ],
+    "alias": "AMIR_SR5",
+    "about_video": "https://rsyglfecaxbuqxfcwtpl.supabase.co/storage/v1/object/public/videos/about-video-1786388669815.mov",
+    "gallery": [
+      "uploads/sb/1788619517548-eqk9g1.jpeg",
+      "uploads/sb/1791228386073-2w7ffq.png",
+      "uploads/sb/1791228551228-6gqlv2.jpeg"
+    ],
+    "music": "uploads/sb/1788716965380-alrio0.mp3"
   },
   "skills": [
     {
       "name": "HTML",
-      "level": 92
+      "level": 92,
+      "icon": "uploads/sb/skill-1786449053598-0.jpeg"
     },
     {
       "name": "CSS",
-      "level": 88
+      "level": 88,
+      "icon": "uploads/sb/skill-1786449074422-1.jpeg"
     },
     {
       "name": "JavaScript",
-      "level": 85
+      "level": 85,
+      "icon": "uploads/sb/skill-1786449107320-2.jpeg"
     },
     {
       "name": "React",
-      "level": 80
+      "level": 80,
+      "icon": "uploads/sb/skill-1786449170667-3.jpeg"
     },
     {
-      "name": "PWA",
-      "level": 90
+      "name": "PWA Development",
+      "level": 90,
+      "icon": "uploads/sb/skill-1786449129138-4.jpeg"
     }
   ],
   "apps": [
     {
       "name": "CYBER GYM",
-      "icon": "gym-icon.png",
+      "src": "sb",
+      "sbid": "58702398-b9a7-417c-a4e9-dd97af9e8d8f",
+      "subtitle": {
+        "fa": "وب اپ تمرین هوشمند",
+        "en": "Smart workout web app"
+      },
+      "icon": "uploads/sb/1786259646584-cyber-gym.svg",
+      "cover": "",
       "desc": {
-        "fa": "وب‌اپلیکیشن پیشرفته فارسی برای ردیابی تمرینات بدنسازی؛ طراحی سایبرپانک، حالت آفلاین و قابل نصب روی اندروید.",
+        "fa": "یک وب‌اپلیکیشن پیشرفته فارسی برای ردیابی تمرینات بدنسازی. طراحی سایبرپانک، پشتیبانی از حالت آفلاین، و قابل نصب روی اندروید.",
         "en": "An advanced Persian web app for tracking gym workouts — cyberpunk design, offline mode, installable on Android."
       },
+      "tech": [
+        "JavaScript",
+        "PWA",
+        "CSS",
+        "HTML"
+      ],
       "links": [
         {
           "label": {
@@ -88,23 +114,95 @@
           },
           "url": "https://github.com/AMIRSR5/CYBER-GYM-PUBLIC-/actions/runs/28055587989/artifacts/7832903892"
         }
-      ],
+      ]
+    },
+    {
+      "name": "Mahjor eatate",
+      "src": "sb",
+      "sbid": "cdb4ccc0-2975-47aa-a0b2-4a6aa4528732",
       "subtitle": {
-        "fa": "وب‌اپ تمرین هوشمند",
-        "en": "Smart workout web app"
+        "fa": "املاک دیجیتال",
+        "en": ""
+      },
+      "icon": "uploads/sb/1790996650417-3wswxf.jpeg",
+      "cover": "",
+      "desc": {
+        "fa": "املاک مهجور (MAHJOR ESTATE) با هدف ساده‌تر کردن فرآیند جست‌وجو و انتخاب ملک طراحی شده؛ جایی برای مشاهده و بررسی ویلا، باغ و خانه با اطلاعات مشخص و تصاویر ملک، تا کاربر راحت‌تر گزینه مناسب خودش را پیدا کند و مستقیماً با مجموعه تماس بگیرد. ",
+        "en": ""
       },
       "tech": [
-        "PWA",
-        "JavaScript",
-        "Offline"
+        "Pwa ‘ java ‘ css ‘ html"
       ],
-      "cover": ""
+      "links": [
+        {
+          "label": {
+            "fa": "ورود به وب‌اپ",
+            "en": "Open web app"
+          },
+          "url": "https://mahjorestate.ir"
+        }
+      ]
+    },
+    {
+      "name": "SR5 Tools",
+      "src": "sb",
+      "sbid": "2220ccc0-51af-4342-a3b3-65679dbc46a4",
+      "subtitle": {
+        "fa": "ابزار هوشمند",
+        "en": ""
+      },
+      "icon": "uploads/sb/1791687136465-2bj6yl.png",
+      "cover": "",
+      "desc": {
+        "fa": "اى از ابزارهاى آنلاين فارسى SR5 Tools\nاست كه كارهاى روزمره، كسبوكار وتوليد محتوا را سريع وساده مى كند. بدون نصب برنامه هاى جداكانه، همه جيز دريك اپ است",
+        "en": ""
+      },
+      "tech": [
+        "Android studio ‘ pwa ‘ html ‘ java"
+      ],
+      "links": [
+        {
+          "label": {
+            "fa": "ورود به وب‌اپ",
+            "en": "Open web app"
+          },
+          "url": "https://sr5tools.ir"
+        }
+      ]
+    },
+    {
+      "name": "صحفه ارتباطی ",
+      "src": "sb",
+      "sbid": "9fb88886-872b-4584-b874-e4b917a3581b",
+      "subtitle": {
+        "fa": "راه های ارتباطی",
+        "en": ""
+      },
+      "icon": "uploads/sb/1791833727007-6unjpi.jpeg",
+      "cover": "",
+      "desc": {
+        "fa": "طراحی و توسعه یک صفحه ارتباطی اختصاصی برای وکیل مردیان با هدف دسترسی سریع کاربران به راه‌های ارتباطی و شبکه‌های اجتماعی در قالب یک رابط کاربری ساده و کاربردی.",
+        "en": ""
+      },
+      "tech": [
+        "Html"
+      ],
+      "links": [
+        {
+          "label": {
+            "fa": "ورود به وب‌اپ",
+            "en": "Open web app"
+          },
+          "url": "https://vakilmoradian.github.io/Vakil/"
+        }
+      ]
     }
   ],
   "contact": {
     "phone": "09037241969",
-    "email": "SA0AR0A0@GMAIL.COM",
-    "instagram": "SALAR_SARAFRAZ",
-    "telegram": "SALAR_SR5"
+    "email": "info@amirhooseinsarafarz.ir",
+    "instagram": "AMIR_SR5_OFFICIAL",
+    "telegram": "Sr5_admin",
+    "github": "SR5"
   }
 }

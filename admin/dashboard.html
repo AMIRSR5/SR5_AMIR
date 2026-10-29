@@ -345,6 +345,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   .cards-row{grid-template-columns:1fr 1fr}
 }
 </style>
+<script src="../sb-merge.js"></script>
 </head>
 <body>
 
@@ -391,6 +392,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </a>
   <a class="nav-item" onclick="showPage('blog')" href="#">
     <span class="nav-icon">📝</span> بلاگ
+  </a>
+  <a class="nav-item" onclick="showPage('github')" href="#" style="border:1px solid rgba(201,168,76,.35)">
+    <span class="icon">🚀</span> انتشار روی گیت‌هاب
   </a>
 
   <div class="nav-section">سایت</div>
@@ -615,13 +619,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="section-card" id="project-form" style="display:none">
       <h3 id="project-form-title">پروژه جدید</h3>
       <input type="hidden" id="p-id">
-      <div class="form-group">
-        <label>آیکون پروژه</label>
-        <div style="display:flex;align-items:center;gap:12px">
-          <img id="p-icon-preview" src="../icon.png" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(201,168,76,0.3)">
-          <input type="file" accept="image/*" onchange="handleProjectIconUpload(this.files)">
-        </div>
-      </div>
       <div class="form-row">
         <div class="form-group">
           <label>عنوان پروژه</label>
@@ -665,6 +662,24 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 
   <!-- BLOG -->
+  <div class="page" id="page-github">
+    <div class="page-title">انتشار روی گیت‌هاب (پشتیبان بدون سوپابیس)</div>
+    <div class="page-sub">با یک کلیک، تمام اطلاعاتی که توی سوپابیس اضافه کردی (تنظیمات، مهارت‌ها، نمونه‌کارها، عکس‌ها، موزیک، پست‌ها) روی گیت‌هاب ذخیره می‌شه. اگه سوپابیس قطع یا فیلتر بشه، سایت همین اطلاعات رو از گیت‌هاب نمایش می‌ده.</div>
+    <div class="section-card">
+      <h3>اتصال به گیت‌هاب</h3>
+      <div class="form-group"><label>Owner</label><input id="gh-owner" value="AMIRSR5" dir="ltr"></div>
+      <div class="form-group"><label>Repository</label><input id="gh-repo" value="SR5_AMIR" dir="ltr"></div>
+      <div class="form-group"><label>Branch</label><input id="gh-branch" value="main" dir="ltr"></div>
+      <div class="form-group"><label>GitHub Token</label><input id="gh-token" type="password" placeholder="github_pat_..." dir="ltr" autocomplete="off"></div>
+      <div style="font-size:12px;color:var(--text-muted)">توکن فقط توی همین مرورگر ذخیره می‌شه و فقط به api.github.com فرستاده می‌شه.</div>
+    </div>
+    <div class="section-card">
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="gh-media" checked style="width:auto"> عکس‌ها، آیکن‌ها و موزیک هم داخل گیت‌هاب کپی بشن (لازمه تا بدون سوپابیس نمایش داده بشن)</label>
+      <button class="btn btn-primary" style="margin-top:14px" id="gh-btn" onclick="publishToGitHub()">🚀 انتشار روی گیت‌هاب</button>
+      <pre id="gh-log" style="margin-top:14px;max-height:260px;overflow:auto;background:#0b0b0b;border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:12px;font-size:12px;direction:rtl;white-space:pre-wrap"></pre>
+    </div>
+  </div>
+
   <div class="page" id="page-blog">
     <div class="page-title">بلاگ</div>
     <div class="page-sub">مدیریت مقالات</div>
@@ -1611,33 +1626,12 @@ function renderProjectsTable() {
   container.innerHTML = html;
 }
 
-let currentProjectIconUrl = '';
-
-async function handleProjectIconUpload(files) {
-  if (!files || !files.length) return;
-  const file = files[0];
-  try {
-    const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
-    const path = `project-icons/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error: upErr } = await sb.storage.from('gallery').upload(path, file, { cacheControl: '3600' });
-    if (upErr) throw upErr;
-    const { data: pub } = sb.storage.from('gallery').getPublicUrl(path);
-    currentProjectIconUrl = pub.publicUrl;
-    document.getElementById('p-icon-preview').src = currentProjectIconUrl;
-    toast('✅ آیکون آپلود شد');
-  } catch (e) {
-    toast('خطا در آپلود آیکون: ' + e.message, 'error');
-  }
-}
-
 function showAddProject() {
   document.getElementById('project-form').style.display = 'block';
   document.getElementById('project-form-title').textContent = 'پروژه جدید';
   document.getElementById('p-id').value = '';
   ['p-title','p-subtitle','p-desc','p-url','p-apk','p-tech'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('p-status').value = 'published';
-  currentProjectIconUrl = '';
-  document.getElementById('p-icon-preview').src = '../icon.png';
   document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
 }
 
@@ -1654,8 +1648,6 @@ function editProject(id) {
   document.getElementById('p-apk').value = p.apk_url || '';
   document.getElementById('p-tech').value = (p.technologies || []).join(', ');
   document.getElementById('p-status').value = p.status || 'published';
-  currentProjectIconUrl = p.icon_url || '';
-  document.getElementById('p-icon-preview').src = currentProjectIconUrl || '../icon.png';
   document.getElementById('project-form').scrollIntoView({behavior:'smooth'});
 }
 
@@ -1673,7 +1665,6 @@ async function saveProject() {
     apk_url: document.getElementById('p-apk').value,
     technologies: document.getElementById('p-tech').value.split(',').map(s=>s.trim()).filter(Boolean),
     status: document.getElementById('p-status').value,
-    icon_url: currentProjectIconUrl || null,
     updated_at: new Date().toISOString()
   };
 
@@ -1908,6 +1899,55 @@ function insertList(type) {
     alert('config.js failed to load (network error or wrong path)');
   };
   document.head.appendChild(s);
+})();
+</script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+['owner','repo','branch','token'].forEach(k=>{const v=localStorage.getItem('gh_'+k);if(v)$('gh-'+k).value=v});
+const log=m=>{const l=$('gh-log');l.textContent+=m+'\n';l.scrollTop=l.scrollHeight};
+const b64=s=>btoa(unescape(encodeURIComponent(s)));
+const unb64=s=>decodeURIComponent(escape(atob(s.replace(/\n/g,''))));
+const enc=p=>p.split('/').map(encodeURIComponent).join('/');
+const cfg=()=>({o:$('gh-owner').value.trim(),r:$('gh-repo').value.trim(),b:$('gh-branch').value.trim()||'main',t:$('gh-token').value.trim()});
+async function gh(path,opt){const c=cfg();opt=opt||{};opt.headers=Object.assign({Accept:'application/vnd.github+json',Authorization:'Bearer '+c.t,'X-GitHub-Api-Version':'2022-11-28'},opt.headers||{});
+  const r=await fetch('https://api.github.com/repos/'+c.o+'/'+c.r+'/'+path,opt);const j=await r.json();if(!r.ok)throw new Error(r.status+' '+(j.message||''));return j}
+async function getFile(p){try{return await gh('contents/'+enc(p)+'?ref='+encodeURIComponent(cfg().b))}catch(e){return null}}
+async function putFile(p,data,msg){const f=await getFile(p);const body={message:msg,content:data,branch:cfg().b};if(f&&f.sha)body.sha=f.sha;return gh('contents/'+enc(p),{method:'PUT',body:JSON.stringify(body)})}
+const blobB64=bl=>new Promise(res=>{const rd=new FileReader();rd.onload=()=>res(rd.result.split(',')[1]);rd.readAsDataURL(bl)});
+window.publishToGitHub=async function(){
+  const c=cfg();$('gh-log').textContent='';
+  if(!c.t){toast('اول توکن گیت‌هاب رو وارد کن','error');return}
+  ['owner','repo','branch','token'].forEach(k=>localStorage.setItem('gh_'+k,$('gh-'+k).value.trim()));
+  const btn=$('gh-btn');btn.disabled=true;
+  try{
+    log('۱) خواندن اطلاعات از سوپابیس...');
+    const raw={};
+    for(const t of ['site_settings','skills','projects','gallery_photos','site_music','blog_posts']){
+      try{const {data,error}=await sb.from(t).select('*');if(error)throw error;raw[t]=data;log('   ✓ '+t+' ('+data.length+')')}catch(e){raw[t]=null;log('   ✗ '+t+' — '+(e.message||'خطا'))}
+    }
+    log('۲) خواندن content.json فعلی از گیت‌هاب...');
+    let base={};const cf=await getFile('content.json');if(cf&&cf.content)base=JSON.parse(unb64(cf.content));
+    const urlmap={};
+    if($('gh-media').checked){
+      let urls=[];(raw.gallery_photos||[]).forEach(p=>p.url&&urls.push(p.url));(raw.projects||[]).forEach(p=>p.icon_url&&urls.push(p.icon_url));(raw.skills||[]).forEach(p=>p.icon_url&&urls.push(p.icon_url));
+      const mu=raw.site_music&&raw.site_music[0];if(mu&&mu.url)urls.push(mu.url);
+      urls=[...new Set(urls)];log('۳) کپی '+urls.length+' فایل به گیت‌هاب...');
+      let n=0;for(const u of urls){n++;
+        try{const r=await fetch(u);if(!r.ok)throw new Error(r.status);const bl=await r.blob();if(bl.size>45*1024*1024)throw new Error('بزرگ‌تر از ۴۵ مگابایت');
+          const nm=decodeURIComponent(u.split('?')[0].split('/').pop()).replace(/[^\w.\-]+/g,'_');const path='uploads/sb/'+nm;
+          await putFile(path,await blobB64(bl),'Backup media '+nm);urlmap[u]=path;log('   ✓ '+n+'/'+urls.length+' '+nm)}
+        catch(e){log('   ✗ '+n+'/'+urls.length+' رد شد: '+e.message)}}
+    }
+    log('۴) ساخت و ذخیره‌ی content.json ...');
+    const merged=SBM.merge(base,raw,u=>urlmap[u]||u);
+    await putFile('content.json',b64(JSON.stringify(merged,null,2)),'Publish from Supabase dashboard');
+    log('۵) ذخیره‌ی نسخه‌ی کامل پشتیبان (supabase-backup.json) ...');
+    await putFile('supabase-backup.json',b64(JSON.stringify({saved_at:new Date().toISOString(),data:raw},null,2)),'Supabase full backup');
+    log('\n✅ تمام شد. تا حدود ۱ دقیقه دیگه گیت‌هاب‌پیجز سایت رو به‌روز می‌کنه.');toast('✅ روی گیت‌هاب منتشر شد');
+  }catch(e){log('\n❌ خطا: '+e.message);toast('خطا: '+e.message,'error')}
+  btn.disabled=false;
+};
 })();
 </script>
 </body>

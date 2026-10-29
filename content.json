@@ -1,0 +1,110 @@
+{
+  "site": {
+    "name": {
+      "fa": "امیرحسین سرافراز",
+      "en": "Amirhossein Sarafraz"
+    },
+    "tagline": {
+      "fa": "برنامه‌نویس فول‌استک و متخصص PWA — رابط‌های وب را با دقتِ مهندسی و حرکتِ درست می‌سازم.",
+      "en": "Full-Stack Developer & PWA specialist — building web interfaces with engineering precision and purposeful motion."
+    },
+    "about": {
+      "fa": "در دنیایی که هر خط کد می‌تواند آینده را دگرگون کند، امیرحسین سرافراز با ۲۰ سال سن ثابت کرده که سن تنها یک عدد است. با بیش از ۲ سال تجربه عملی در توسعه وب و موبایل، پروژه‌های واقعی برای بازار ایران ساخته.",
+      "en": "In a world where every line of code can reshape the future, Amirhossein Sarafraz, at just 20, has proven that age is only a number. With over 2 years of hands-on web and mobile development, he has built real projects for the Iranian market."
+    },
+    "stats": [
+      {
+        "value": "10+",
+        "label": {
+          "fa": "پروژه فعال",
+          "en": "Active projects"
+        }
+      },
+      {
+        "value": "2",
+        "label": {
+          "fa": "سال سابقه",
+          "en": "Years of experience"
+        }
+      },
+      {
+        "value": "20",
+        "label": {
+          "fa": "سال سن",
+          "en": "Years old"
+        }
+      },
+      {
+        "value": "5",
+        "label": {
+          "fa": "تکنولوژی اصلی",
+          "en": "Core technologies"
+        }
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "HTML",
+      "level": 92
+    },
+    {
+      "name": "CSS",
+      "level": 88
+    },
+    {
+      "name": "JavaScript",
+      "level": 85
+    },
+    {
+      "name": "React",
+      "level": 80
+    },
+    {
+      "name": "PWA",
+      "level": 90
+    }
+  ],
+  "apps": [
+    {
+      "name": "CYBER GYM",
+      "icon": "gym-icon.png",
+      "desc": {
+        "fa": "وب‌اپلیکیشن پیشرفته فارسی برای ردیابی تمرینات بدنسازی؛ طراحی سایبرپانک، حالت آفلاین و قابل نصب روی اندروید.",
+        "en": "An advanced Persian web app for tracking gym workouts — cyberpunk design, offline mode, installable on Android."
+      },
+      "links": [
+        {
+          "label": {
+            "fa": "ورود به وب‌اپ",
+            "en": "Open web app"
+          },
+          "url": "https://amirsr5.github.io/CYBER-GYM-PUBLIC-/"
+        },
+        {
+          "label": {
+            "fa": "دانلود APK اندروید",
+            "en": "Download Android APK"
+          },
+          "url": "https://github.com/AMIRSR5/CYBER-GYM-PUBLIC-/actions/runs/28055587989/artifacts/7832903892"
+        }
+      ],
+      "subtitle": {
+        "fa": "وب‌اپ تمرین هوشمند",
+        "en": "Smart workout web app"
+      },
+      "tech": [
+        "PWA",
+        "JavaScript",
+        "Offline"
+      ],
+      "cover": ""
+    }
+  ],
+  "contact": {
+    "phone": "09037241969",
+    "email": "SA0AR0A0@GMAIL.COM",
+    "instagram": "SALAR_SARAFRAZ",
+    "telegram": "SALAR_SR5"
+  }
+}

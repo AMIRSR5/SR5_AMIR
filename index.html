@@ -294,7 +294,22 @@ function render(){
   if(C.instagram)cards.push(['insta','@'+C.instagram.replace(/^@/,''),'https://instagram.com/'+C.instagram.replace(/^@/,''),'open']);
   if(C.telegram)cards.push(['tg','@'+C.telegram.replace(/^@/,''),'https://t.me/'+C.telegram.replace(/^@/,''),'open']);
   $('#contact-grid').innerHTML=cards.map(function(c){return '<a class="glass cc rv in" href="'+esc(c[2])+'" target="_blank" rel="noopener"><small>'+U[c[0]]+'</small><b>'+esc(c[1])+'</b><u>'+U[c[3]]+'</u></a>'}).join('');
-  gallery();music();watch();
+  gallery();music();watch();fillEn();
+}
+/* ترجمه‌ی خودکار متن‌هایی که نسخه‌ی انگلیسی ندارن (فقط وقتی زبان انگلیسیه) */
+var trC={},trFail={},trBusy=false;try{trC=JSON.parse(localStorage.getItem('sr5_tr')||'{}')}catch(e){}
+function fillEn(){
+  if(lang!=='en'||!D||trBusy||typeof SBM==='undefined')return;
+  var jobs=[],S=D.site||{},applied=false;
+  function add(o){if(o&&typeof o==='object'&&o.fa&&!o.en&&/[\u0600-\u06FF]/.test(o.fa)){if(trC[o.fa]){o.en=trC[o.fa];applied=true}else if(!trFail[o.fa])jobs.push(o)}}
+  add(S.tagline);add(S.about);(D.apps||[]).forEach(function(a){add(a.desc);add(a.subtitle)});
+  if(applied){render();return}
+  if(!jobs.length)return;
+  trBusy=true;
+  jobs.slice(0,14).reduce(function(pr,o){return pr.then(function(){return SBM.translate(o.fa).then(function(en){if(!en)throw 0;trC[o.fa]=en;o.en=en}).catch(function(){trFail[o.fa]=1})})},Promise.resolve()).then(function(){
+    try{localStorage.setItem('sr5_tr',JSON.stringify(trC))}catch(e){}
+    trBusy=false;render();
+  });
 }
 function renderWorks(){
   var W=D.apps||[];$('#wk-count').textContent=nd(W.length)+(lang==='fa'?' نمونه‌کار':' projects');

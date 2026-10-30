@@ -49,7 +49,7 @@ SBM.merge=function(base,raw,mapUrl){
       if(p.demo_url)links.push({label:{fa:'ورود به وب‌اپ',en:'Open web app'},url:p.demo_url});
       if(p.apk_url)links.push({label:{fa:'دانلود APK اندروید',en:'Download Android APK'},url:p.apk_url});
       return {name:p.title,src:'sb',sbid:p.id,subtitle:{fa:p.subtitle||'',en:(prev.subtitle&&prev.subtitle.en)||''},
-        icon:p.icon_url?mapUrl(p.icon_url):(prev.icon||''),cover:prev.cover||'',
+        icon:p.icon_url?mapUrl(p.icon_url):(prev.icon||''),cover:p.cover_url?mapUrl(p.cover_url):(prev.cover||''),images:(p.images||[]).map(mapUrl),
         desc:{fa:p.description||'',en:(prev.desc&&prev.desc.en)||''},tech:p.technologies||[],links:links}
     });
     var names={};imported.forEach(function(a){names[low(a.name)]=1});
@@ -59,6 +59,29 @@ SBM.merge=function(base,raw,mapUrl){
   if(raw.gallery_photos&&raw.gallery_photos.length)S.gallery=sortBy(raw.gallery_photos,'sort_order').map(function(p){return mapUrl(p.url)});
   var mu=raw.site_music&&raw.site_music[0];if(mu&&mu.url)S.music=mapUrl(mu.url);
   return c;
+};
+/* ---------- ترجمه‌ی خودکار فارسی → انگلیسی ---------- */
+function hasFa(t){return /[\u0600-\u06FF]/.test(t||'')}
+function chunks(t){var out=[],cur='';String(t).split(/(?<=[.!؟?\n۔])/).forEach(function(p){if((cur+p).length>380&&cur){out.push(cur);cur=p}else cur+=p});if(cur)out.push(cur);return out}
+function tmo(p,ms){return Promise.race([p,new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'))},ms)})])}
+function gtx(q){return tmo(fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=fa&tl=en&dt=t&q='+encodeURIComponent(q)).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){return j[0].map(function(x){return x[0]}).join('')}),7000)}
+function mym(q){return tmo(fetch('https://api.mymemory.translated.net/get?langpair=fa|en&q='+encodeURIComponent(q)).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){var t=j.responseData&&j.responseData.translatedText;if(!t||/MYMEMORY WARNING/i.test(t))throw 0;return t}),7000)}
+SBM.translate=function(text){
+  var parts=chunks(text),out=[];
+  return parts.reduce(function(pr,p){return pr.then(function(){return gtx(p).catch(function(){return mym(p)}).then(function(t){out.push(t)})})},Promise.resolve()).then(function(){return out.join(' ').replace(/\s+/g,' ').trim()});
+};
+SBM.autoTranslate=function(c,log){
+  log=log||function(){};c._tr=c._tr||{};var auto={};Object.keys(c._tr).forEach(function(k){auto[c._tr[k]]=1});
+  var jobs=[],S=c.site||{};
+  function add(o,k){if(o&&o[k]&&typeof o[k]==='object'&&hasFa(o[k].fa))jobs.push(o[k])}
+  add(S,'tagline');add(S,'about');
+  (c.apps||[]).forEach(function(a){add(a,'desc');add(a,'subtitle')});
+  var used={},n=0,fail=0;
+  return jobs.reduce(function(pr,o){return pr.then(function(){
+    var fa=o.fa;used[fa]=1;var cur=o.en;if(cur&&!auto[cur])return;   /* ترجمه‌ی دستی را دست نمی‌زنیم */
+    if(c._tr[fa]){o.en=c._tr[fa];return}
+    return SBM.translate(fa).then(function(en){if(!en)throw 0;c._tr[fa]=en;o.en=en;n++;log('   ✓ ترجمه شد: '+fa.slice(0,28)+'…')}).catch(function(){fail++;log('   ✗ ترجمه‌ی خودکار در دسترس نبود: '+fa.slice(0,28)+'…')});
+  })},Promise.resolve()).then(function(){Object.keys(c._tr).forEach(function(k){if(!used[k])delete c._tr[k]});return {done:n,failed:fail}});
 };
 w.SBM=SBM;
 })(window);

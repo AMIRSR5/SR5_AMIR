@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>پنل مدیریت | AMIR_SR5</title>
+<link rel="icon" href="sr5-icon.png">
+<script src="admin/config.js"></script>
+<script src="sb-merge.js"></script>
+<script src="gh-vault.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#C9A84C;--gold-light:#E8C96A;--black:#080808;--dark:#0f0f0f;--dark2:#1A1A1A;--dark3:#242424;--sw:260px;--text:#E8E8E8;--mut:#888;--green:#22c55e;--red:#ef4444}
+body{font-family:"Vazirmatn","Segoe UI",Tahoma,sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+button{font:inherit;cursor:pointer}
+input,textarea,select{width:100%;background:var(--dark2);border:1px solid rgba(201,168,76,.22);border-radius:10px;color:#fff;padding:.6rem .8rem;font:inherit}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--gold)}
+textarea{min-height:90px;resize:vertical}
+input[type=checkbox]{width:auto}
+label{display:block;color:var(--mut);font-size:12px;margin:.7rem 0 .25rem}
+.ltr{direction:ltr;text-align:left}
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:1rem;background:radial-gradient(circle at 50% 30%,#2a2008,#080808 65%)}
+.lbox{width:min(420px,100%);background:rgba(15,15,15,.92);border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:2rem;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.lbox img{width:84px;height:84px;border-radius:50%;display:block;margin:0 auto 1rem;box-shadow:0 0 50px rgba(201,168,76,.4)}
+.lbox h1{text-align:center;font-size:1.2rem;color:var(--gold-light);margin-bottom:.3rem}
+.lbox p.s{text-align:center;color:var(--mut);font-size:12px;margin-bottom:1rem}
+.err{color:#fca5a5;font-size:12.5px;margin-top:.7rem;min-height:1.2rem;text-align:center}
+.lnk{background:none;border:0;color:var(--gold);font-size:12px;margin-top:.9rem;display:block;margin-inline:auto}
+/* app */
+#app{display:none}
+.sidebar{width:var(--sw);background:var(--black);border-left:1px solid rgba(201,168,76,.15);position:fixed;top:0;right:0;bottom:0;display:flex;flex-direction:column;z-index:100;transition:transform .3s;overflow:auto}
+.sh{padding:1.3rem 1.2rem;border-bottom:1px solid rgba(201,168,76,.1);display:flex;align-items:center;gap:12px}
+.sh img{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--gold)}
+.sh b{color:var(--gold);font-size:13px;letter-spacing:2px;display:block}.sh small{color:var(--mut);font-size:11px}
+.ns{padding:1rem 1rem .4rem;font-size:10px;color:var(--mut);letter-spacing:1px}
+.ni{display:flex;align-items:center;gap:10px;padding:.7rem 1.2rem;color:var(--mut);font-size:14px;cursor:pointer;border-right:3px solid transparent;transition:.2s;background:none;border-top:0;border-bottom:0;border-left:0;width:100%;text-align:right}
+.ni:hover,.ni.on{color:var(--gold-light);background:rgba(201,168,76,.07);border-right-color:var(--gold)}
+.main{margin-right:var(--sw);padding:1.5rem 1.6rem 5rem;min-height:100vh}
+.top{display:flex;gap:.6rem;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:1.3rem;position:sticky;top:0;z-index:50;background:rgba(15,15,15,.92);backdrop-filter:blur(8px);padding:.7rem 0}
+#burger{display:none;background:var(--dark2);border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:8px;padding:.4rem .7rem}
+.dirty{font-size:12px;color:#fbbf24}
+.pt{font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:.2rem}.ps{color:var(--mut);font-size:13px;margin-bottom:1.2rem}
+.page{display:none}.page.on{display:block}
+.card{background:var(--dark2);border:1px solid rgba(201,168,76,.15);border-radius:14px;padding:1.2rem;margin-bottom:1rem}
+.card h3{color:var(--gold);font-size:1rem;margin-bottom:.6rem}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}.r3{display:grid;grid-template-columns:2fr 1fr auto;gap:.6rem;align-items:end}
+.btn{border:1px solid rgba(201,168,76,.4);background:none;color:var(--gold-light);border-radius:10px;padding:.55rem 1.1rem;font-weight:700;font-size:13px;transition:.2s}
+.btn:hover{background:rgba(201,168,76,.12)}.btn:disabled{opacity:.5;cursor:wait}
+.btn.p{background:linear-gradient(135deg,var(--gold-light),var(--gold));color:#15110a;border:0}
+.btn.p:hover{box-shadow:0 0 22px rgba(201,168,76,.45)}
+.btn.d{border-color:rgba(239,68,68,.5);color:#fca5a5}.btn.s{padding:.3rem .7rem;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin-bottom:1rem}
+.sc{background:var(--dark2);border:1px solid rgba(201,168,76,.15);border-radius:14px;padding:1rem}.sc b{font-size:1.8rem;color:var(--gold-light);display:block}.sc span{color:var(--mut);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.9rem}
+.wc{background:var(--dark3);border:1px solid rgba(201,168,76,.15);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.wc .im{height:110px;background:#111 center/cover;display:grid;place-items:center;color:var(--mut);font-size:12px}
+.wc .bd{padding:.8rem;display:flex;flex-direction:column;gap:.5rem;flex:1}.wc b{direction:ltr;text-align:left}
+.wc .ac{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:auto}
+.th{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid rgba(201,168,76,.3)}
+.thw{position:relative;display:inline-block;margin:.3rem}.thw button{position:absolute;top:-6px;left:-6px;background:#ef4444;color:#fff;border:0;border-radius:50%;width:22px;height:22px;line-height:1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow:auto}
+.modal.on{display:flex}.mbox{background:var(--dark);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:1.3rem;width:min(760px,100%);margin:2rem 0}
+pre.log{background:#0b0b0b;border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:12px;font-size:12px;max-height:280px;overflow:auto;white-space:pre-wrap;margin-top:.8rem;min-height:60px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16130a;border:1px solid var(--gold);color:var(--gold-light);padding:.6rem 1.2rem;border-radius:999px;z-index:999;display:none;font-size:13px;max-width:92vw}
+.hint{color:var(--mut);font-size:12px;margin-top:.4rem}
+@media(max-width:860px){.sidebar{transform:translateX(100%)}.sidebar.open{transform:none}.main{margin-right:0;padding:1rem .9rem 5rem}#burger{display:block}.r2,.r3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="login"><div class="lbox">
+  <img src="sr5-icon.png" alt="SR5">
+  <div id="l-login" style="display:none">
+    <h1>ورود به پنل مدیریت</h1><p class="s">نام کاربری و رمز عبوری که تعیین کردی رو وارد کن</p>
+    <label>نام کاربری</label><input id="lu" class="ltr" autocomplete="username">
+    <label>رمز عبور</label><input id="lp" type="password" class="ltr" autocomplete="current-password">
+    <button class="btn p" id="lgo" style="width:100%;margin-top:1.1rem;padding:.7rem">ورود</button>
+    <button class="lnk" id="to-setup" type="button">تنظیم مجدد نام کاربری و رمز (با توکن گیت‌هاب)</button>
+  </div>
+  <div id="l-setup" style="display:none">
+    <h1>راه‌اندازی اولیه پنل</h1><p class="s">توکن گیت‌هاب رو یک‌بار وارد کن؛ با نام کاربری و رمزی که انتخاب می‌کنی رمزگذاری و ذخیره می‌شه.</p>
+    <div class="r2"><div><label>Owner</label><input id="so" class="ltr" value="AMIRSR5"></div><div><label>Repository</label><input id="sr" class="ltr" value="SR5_AMIR"></div></div>
+    <label>Branch</label><input id="sb" class="ltr" value="main">
+    <label>GitHub Token</label><input id="st" type="password" class="ltr" placeholder="github_pat_..." autocomplete="off">
+    <div class="r2"><div><label>نام کاربری دلخواه</label><input id="su" class="ltr" autocomplete="off"></div><div><label>رمز عبور (حداقل ۸ کاراکتر)</label><input id="sp" type="password" class="ltr" autocomplete="new-password"></div></div>
+    <button class="btn p" id="sgo" style="width:100%;margin-top:1.1rem;padding:.7rem">ساخت و ورود</button>
+    <button class="lnk" id="to-login" type="button" style="display:none">بازگشت به ورود</button>
+  </div>
+  <div id="l-load" style="text-align:center;color:var(--mut)">در حال بررسی...</div>
+  <div class="err" id="lerr"></div>
+</div></div>
+
+<div id="app">
+<aside class="sidebar" id="side">
+  <div class="sh"><img src="sr5-icon.png" alt=""><div><b>AMIR_SR5</b><small>پنل مدیریت گیت‌هاب</small></div></div>
+  <div class="ns">مدیریت</div>
+  <button class="ni on" data-pg="home">🏠 خانه</button>
+  <button class="ni" data-pg="settings">⚙️ تنظیمات سایت</button>
+  <button class="ni" data-pg="stats">📊 آمار</button>
+  <button class="ni" data-pg="skills">🛠 مهارت‌ها</button>
+  <button class="ni" data-pg="works">💼 نمونه‌کارها</button>
+  <button class="ni" data-pg="gallery">🖼 گالری</button>
+  <button class="ni" data-pg="music">🎵 موزیک</button>
+  <button class="ni" data-pg="contact">📞 تماس</button>
+  <div class="ns">ابزارها</div>
+  <button class="ni" data-pg="sync">☁️ همگام‌سازی سوپابیس</button>
+  <button class="ni" data-pg="files">📁 فایل‌ها و ویدیوها</button>
+  <button class="ni" data-pg="security">🔐 امنیت و حساب</button>
+  <a class="ni" href="./" target="_blank" style="text-decoration:none">🌐 مشاهده سایت</a>
+  <div style="flex:1"></div>
+  <button class="ni" id="logout">🚪 خروج</button>
+</aside>
+<div class="main">
+  <div class="top">
+    <div style="display:flex;gap:.6rem;align-items:center"><button id="burger">☰</button><span class="dirty" id="dirty"></span></div>
+    <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+      <label style="margin:0;display:flex;gap:.4rem;align-items:center;font-size:12px"><input type="checkbox" id="autotr" checked> ترجمه‌ی خودکار</label>
+      <button class="btn p" id="pub">🚀 انتشار روی سایت</button>
+      <button class="btn" id="close" title="بستن پنل">✕</button>
+    </div>
+  </div>
+
+  <div class="page on" id="pg-home">
+    <div class="pt">خوش اومدی 👋</div><div class="ps">هر تغییری بدی، با دکمه‌ی «انتشار» مستقیم روی گیت‌هاب و سایت اعمال می‌شه.</div>
+    <div class="stats" id="hstats"></div>
+    <div class="card"><h3>وضعیت</h3><div id="hinfo" class="hint">در حال بررسی...</div></div>
+    <div class="card"><h3>شروع سریع</h3><div style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <button class="btn" data-go="works">+ نمونه‌کار جدید</button><button class="btn" data-go="gallery">+ عکس گالری</button><button class="btn" data-go="sync">☁️ همگام‌سازی سوپابیس</button></div></div>
+  </div>
+
+  <div class="page" id="pg-settings">
+    <div class="pt">تنظیمات سایت</div><div class="ps">متن‌های فارسی و انگلیسی. اگه انگلیسی رو خالی بذاری، موقع انتشار خودکار ترجمه می‌شه.</div>
+    <div class="card"><div class="r2"><div><label>نام (فارسی)</label><input data-b="site.name.fa"></div><div><label>Name (English)</label><input class="ltr" data-b="site.name.en"></div></div>
+    <div class="r2"><div><label>شعار (فارسی)</label><textarea data-b="site.tagline.fa"></textarea></div><div><label>Tagline (English)</label><textarea class="ltr" data-b="site.tagline.en"></textarea></div></div>
+    <div class="r2"><div><label>درباره من (فارسی)</label><textarea data-b="site.about.fa" style="min-height:140px"></textarea></div><div><label>About (English)</label><textarea class="ltr" data-b="site.about.en" style="min-height:140px"></textarea></div></div>
+    <button class="btn" id="trall" style="margin-top:.8rem">🌐 ترجمه‌ی همه‌ی متن‌های خالی الان</button></div>
+  </div>
+
+  <div class="page" id="pg-stats"><div class="pt">آمار صفحه‌ی اول</div><div class="ps">کارت‌های کوچک زیر معرفی (مثلاً ۱۰+ پروژه)</div>
+    <div class="card"><div id="statsL"></div><button class="btn" id="addStat">+ آمار جدید</button></div></div>
+
+  <div class="page" id="pg-skills"><div class="pt">مهارت‌ها</div><div class="ps">نام و درصد تسلط</div>
+    <div class="card"><div id="skillsL"></div><button class="btn" id="addSkill">+ مهارت جدید</button></div></div>
+
+  <div class="page" id="pg-works"><div class="pt">نمونه‌کارها</div><div class="ps">با عکس، توضیحات و لینک. در سایت به‌صورت کشویی نمایش داده می‌شن و صفحه رو پر نمی‌کنن.</div>
+    <div style="margin-bottom:1rem"><button class="btn p" id="addWork">+ نمونه‌کار جدید</button></div>
+    <div class="grid" id="worksL"></div></div>
+
+  <div class="page" id="pg-gallery"><div class="pt">گالری (عکس‌های بخش درباره من)</div><div class="ps">اگه چند عکس بذاری، به‌صورت اسلایدشو نمایش داده می‌شه.</div>
+    <div class="card"><label>آپلود عکس (چندتا هم می‌تونی انتخاب کنی)</label><input type="file" id="galUp" accept="image/*" multiple><div id="galL" style="margin-top:.8rem"></div></div></div>
+
+  <div class="page" id="pg-music"><div class="pt">موزیک پس‌زمینه</div><div class="ps">یه دکمه‌ی ♪ توی سایت ظاهر می‌شه که بازدیدکننده خودش پخش می‌کنه.</div>
+    <div class="card"><div id="musCur" class="hint"></div><label>آپلود فایل صوتی (حداکثر ۴۰ مگابایت)</label><input type="file" id="musUp" accept="audio/*">
+    <label>یا آدرس مستقیم</label><input class="ltr" data-b="site.music" placeholder="uploads/music/song.mp3"><button class="btn d s" id="musDel" style="margin-top:.6rem">حذف موزیک</button></div></div>
+
+  <div class="page" id="pg-contact"><div class="pt">اطلاعات تماس</div><div class="ps"></div>
+    <div class="card"><div class="r2"><div><label>شماره تماس</label><input class="ltr" data-b="contact.phone"></div><div><label>ایمیل</label><input class="ltr" data-b="contact.email"></div></div>
+    <div class="r2"><div><label>اینستاگرام (بدون @)</label><input class="ltr" data-b="contact.instagram"></div><div><label>تلگرام (بدون @)</label><input class="ltr" data-b="contact.telegram"></div></div>
+    <label>گیت‌هاب</label><input class="ltr" data-b="contact.github"></div></div>
+
+  <div class="page" id="pg-sync"><div class="pt">همگام‌سازی سوپابیس ← گیت‌هاب</div><div class="ps">همه‌ی اطلاعات سوپابیس خونده می‌شه، عکس‌ها کپی می‌شن و متن‌ها ترجمه می‌شن. نمونه‌کارهایی که دستی اینجا ساختی حفظ می‌شن.</div>
+    <div class="card"><label style="display:flex;gap:.5rem;align-items:center;margin:0 0 .8rem"><input type="checkbox" id="cpm" checked> عکس‌ها، آیکن‌ها و موزیک هم داخل گیت‌هاب کپی بشن</label>
+    <button class="btn p" id="syncGo">☁️ شروع همگام‌سازی و انتشار</button><pre class="log" id="slog"></pre></div></div>
+
+  <div class="page" id="pg-files"><div class="pt">فایل‌ها و ویدیوها</div><div class="ps">آپلود مستقیم هر فایل به ریپو؛ مثلاً جایگزینی ویدیوهای اسکرول.</div>
+    <div class="card"><div class="r2"><div><label>فایل</label><input type="file" id="fUp"></div><div><label>مسیر مقصد</label><input class="ltr" id="fPath" value="uploads/"></div></div>
+    <div class="hint">ویدیوی لپ‌تاپ: <b>hero-laptop.mp4</b> — ویدیوی موبایل: <b>hero-mobile.mp4</b> — حداکثر حدود ۹۰ مگابایت.</div>
+    <button class="btn p" id="fGo" style="margin-top:.8rem">آپلود</button></div></div>
+
+  <div class="page" id="pg-security"><div class="pt">امنیت و حساب</div><div class="ps">تغییر نام کاربری و رمز ورود به این پنل</div>
+    <div class="card"><h3>نام کاربری و رمز جدید</h3><div class="r2"><div><label>نام کاربری جدید</label><input id="nu" class="ltr" autocomplete="off"></div><div><label>رمز جدید (حداقل ۸ کاراکتر)</label><input id="np" type="password" class="ltr" autocomplete="new-password"></div></div>
+    <button class="btn p" id="chg" style="margin-top:.8rem">ذخیره‌ی نام کاربری و رمز</button>
+    <div class="hint">توکن گیت‌هاب با AES-256 و رمز تو رمزگذاری می‌شه و در فایل vault.json داخل ریپو نگه‌داری می‌شه؛ بدون رمز تو قابل خوندن نیست. رمز قوی انتخاب کن.</div></div></div>
+</div>
+</div>
+
+<div class="modal" id="wm"><div class="mbox" id="wbox"></div></div>
+<div id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
+var enc=function(p){return p.split('/').map(encodeURIComponent).join('/')};
+var b64=function(s){return btoa(unescape(encodeURIComponent(s)))},unb64=function(s){return decodeURIComponent(escape(atob(s.replace(/\n/g,''))))};
+var CFG=null,D=null,dirty=false,previews={};
+function toast(m){var t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},3800)}
+function esc(s){var d=document.createElement('div');d.textContent=s==null?'':s;return d.innerHTML.replace(/"/g,'&quot;')}
+function get(o,p){return p.split('.').reduce(function(a,k){return a==null?a:a[k]},o)}
+function set(o,p,v){var a=p.split('.');for(var i=0;i<a.length-1;i++){var n=a[i+1];if(o[a[i]]==null)o[a[i]]=/^\d+$/.test(n)?[]:{};o=o[a[i]]}o[a[a.length-1]]=v}
+function mark(){dirty=true;$('#dirty').textContent='● تغییرات منتشر نشده'}
+
+/* ---------- GitHub API ---------- */
+function api(path,opt){opt=opt||{};opt.headers=Object.assign({Accept:'application/vnd.github+json',Authorization:'Bearer '+CFG.t,'X-GitHub-Api-Version':'2022-11-28'},opt.headers||{});
+  return fetch('https://api.github.com/repos/'+CFG.o+'/'+CFG.r+'/'+path,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(r.status+' '+(j.message||''));return j})})}
+function getFile(p){return api('contents/'+enc(p)+'?ref='+encodeURIComponent(CFG.b)).catch(function(){return null})}
+function putFile(p,data,msg){return getFile(p).then(function(f){var b={message:msg,content:data,branch:CFG.b};if(f&&f.sha)b.sha=f.sha;return api('contents/'+enc(p),{method:'PUT',body:JSON.stringify(b)})})}
+function blobB64(bl){return new Promise(function(res){var rd=new FileReader();rd.onload=function(){res(rd.result.split(',')[1])};rd.readAsDataURL(bl)})}
+function shrink(file,max,png){return new Promise(function(res){
+  if(!/^image\/(jpe?g|png|webp)$/.test(file.type))return res(file);
+  var img=new Image(),u=URL.createObjectURL(file);
+  img.onload=function(){var k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(b){res(b||file)},png?'image/png':'image/jpeg',.86)};
+  img.onerror=function(){res(file)};img.src=u})}
+function rid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function uploadImg(file,dir,max,png){return shrink(file,max,png).then(function(bl){
+  var ext=bl.type==='image/png'?'png':bl.type==='image/jpeg'?'jpg':(file.name.split('.').pop()||'bin').toLowerCase(),path=dir+'/'+rid()+'.'+ext;
+  return blobB64(bl).then(function(d){return putFile(path,d,'Upload '+path)}).then(function(){previews[path]=URL.createObjectURL(bl);return path})})}
+function pv(p){return previews[p]||p}
+
+/* ---------- login ---------- */
+function showL(which,err){['login','setup','load'].forEach(function(k){$('#l-'+k).style.display=k===which?'block':'none'});$('#lerr').textContent=err||''}
+var vaultJson=null;
+function boot(){
+  var s=sessionStorage.getItem('sr5s');if(s){try{CFG=JSON.parse(s);return enter()}catch(e){sessionStorage.removeItem('sr5s')}}
+  fetch('vault.json?'+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}).then(function(v){vaultJson=v;if(v&&v.ct){showL('login');$('#to-login').style.display='block'}else{showL('setup');$('#to-login').style.display='none'}});
+}
+$('#lgo').onclick=function(){
+  var u=$('#lu').value.trim(),p=$('#lp').value;if(!u||!p){showL('login','نام کاربری و رمز رو وارد کن');return}
+  $('#lgo').disabled=true;$('#lerr').textContent='';
+  Vault.open(u,p,vaultJson).then(function(pl){CFG={o:pl.owner,r:pl.repo,b:pl.branch||'main',t:pl.token};sessionStorage.setItem('sr5s',JSON.stringify(CFG));return enter()}).catch(function(e){showL('login',e.message)}).then(function(){$('#lgo').disabled=false});
+};
+$('#lp').addEventListener('keydown',function(e){if(e.key==='Enter')$('#lgo').click()});
+$('#to-setup').onclick=function(){showL('setup');$('#to-login').style.display='block'};
+$('#to-login').onclick=function(){showL('login')};
+$('#sgo').onclick=function(){
+  var o=$('#so').value.trim(),r=$('#sr').value.trim(),b=$('#sb').value.trim()||'main',t=$('#st').value.trim(),u=$('#su').value.trim(),p=$('#sp').value;
+  if(!t||!u||!p){showL('setup','همه‌ی فیلدها رو پر کن');return}
+  if(p.length<8){showL('setup','رمز عبور باید حداقل ۸ کاراکتر باشه');return}
+  CFG={o:o,r:r,b:b,t:t};$('#sgo').disabled=true;$('#lerr').textContent='در حال بررسی توکن...';
+  api('').then(function(){return Vault.create(u,p,{token:t,owner:o,repo:r,branch:b})}).then(function(v){return putFile('vault.json',b64(JSON.stringify(v)),'Update admin vault')})
+   .then(function(){sessionStorage.setItem('sr5s',JSON.stringify(CFG));toast('✓ نام کاربری و رمز ساخته شد');return enter()}).catch(function(e){CFG=null;showL('setup','خطا: '+e.message+' — توکن/ریپو رو چک کن')}).then(function(){$('#sgo').disabled=false});
+};
+$('#logout').onclick=function(){sessionStorage.removeItem('sr5s');location.reload()};
+$('#close').onclick=function(){if(dirty&&!confirm('تغییرات منتشر نشده از بین می‌ره. بستن؟'))return;try{top.location.hash=''}catch(e){location.href='./'}};
+
+/* ---------- load content ---------- */
+function enter(){
+  return getFile('content.json').then(function(f){
+    D=f&&f.content?JSON.parse(unb64(f.content)):{};
+    D.site=D.site||{};D.site.name=D.site.name||{};D.site.tagline=D.site.tagline||{};D.site.about=D.site.about||{};D.site.stats=D.site.stats||[];D.site.gallery=D.site.gallery||[];D.skills=D.skills||[];D.apps=D.apps||[];D.contact=D.contact||{};
+    $('#login').style.display='none';$('#app').style.display='block';bindAll();renderAll();home();
+  });
+}
+
+/* ---------- binding ---------- */
+function bindAll(){$$('[data-b]').forEach(function(e){e.value=get(D,e.getAttribute('data-b'))||''})}
+document.addEventListener('input',function(e){var t=e.target,p=t.getAttribute&&t.getAttribute('data-b');if(!p||!D)return;
+  var v=t.type==='number'?(+t.value||0):t.value;if(/\.tech$/.test(p))v=t.value.split(',').map(function(x){return x.trim()}).filter(Boolean);set(D,p,v);mark()});
+function nav(pg){$$('.page').forEach(function(p){p.classList.toggle('on',p.id==='pg-'+pg)});$$('.ni[data-pg]').forEach(function(n){n.classList.toggle('on',n.dataset.pg===pg)});$('#side').classList.remove('open');if(pg==='home')home();window.scrollTo(0,0)}
+document.addEventListener('click',function(e){var t=e.target.closest('[data-pg]');if(t){nav(t.dataset.pg);return}t=e.target.closest('[data-go]');if(t)nav(t.dataset.go)});
+$('#burger').onclick=function(){$('#side').classList.toggle('open')};
+
+/* ---------- renderers ---------- */
+function renderAll(){renderStats();renderSkills();renderWorks();renderGallery();renderMusic()}
+function renderStats(){$('#statsL').innerHTML=D.site.stats.map(function(s,i){return '<div class="r3" style="margin-bottom:.6rem"><div class="r2"><div><label>مقدار</label><input class="ltr" data-b="site.stats.'+i+'.value" value="'+esc(s.value)+'"></div><div><label>برچسب فارسی</label><input data-b="site.stats.'+i+'.label.fa" value="'+esc(s.label&&s.label.fa)+'"></div></div><div><label>English label</label><input class="ltr" data-b="site.stats.'+i+'.label.en" value="'+esc(s.label&&s.label.en)+'"></div><button class="btn d s" data-del="stat:'+i+'">حذف</button></div>'}).join('')}
+function renderSkills(){$('#skillsL').innerHTML=D.skills.map(function(s,i){return '<div class="r3" style="margin-bottom:.6rem"><div><label>نام</label><input class="ltr" data-b="skills.'+i+'.name" value="'+esc(s.name)+'"></div><div><label>درصد</label><input type="number" min="0" max="100" data-b="skills.'+i+'.level" value="'+esc(s.level)+'"></div><button class="btn d s" data-del="skill:'+i+'">حذف</button></div>'}).join('')}
+function renderWorks(){$('#worksL').innerHTML=D.apps.map(function(a,i){var im=a.cover||a.icon;return '<div class="wc"><div class="im" style="'+(im?'background-image:url(\''+esc(pv(im))+'\')':'')+'">'+(im?'':'بدون عکس')+'</div><div class="bd"><b>'+esc(a.name||'(بدون نام)')+'</b><span class="hint">'+esc((a.subtitle&&a.subtitle.fa)||'')+'</span>'+(a.src==='sb'?'<span class="hint">از سوپابیس</span>':'')+'<div class="ac"><button class="btn s" data-ew="'+i+'">ویرایش</button><button class="btn s" data-mv="'+i+':-1">↑</button><button class="btn s" data-mv="'+i+':1">↓</button><button class="btn d s" data-del="work:'+i+'">حذف</button></div></div></div>'}).join('')||'<div class="hint">هنوز نمونه‌کاری نداری.</div>'}
+function renderGallery(){$('#galL').innerHTML=D.site.gallery.map(function(u,i){return '<div class="thw"><img class="th" src="'+esc(pv(u))+'" alt=""><button data-del="gal:'+i+'">×</button><div style="text-align:center"><button class="btn s" data-gm="'+i+':-1">‹</button><button class="btn s" data-gm="'+i+':1">›</button></div></div>'}).join('')||'<div class="hint">عکسی نیست.</div>'}
+function renderMusic(){$('#musCur').textContent=D.site.music?('موزیک فعلی: '+D.site.music):'موزیکی تنظیم نشده';$('[data-b="site.music"]').value=D.site.music||''}
+function home(){
+  $('#hstats').innerHTML=[[D.apps.length,'نمونه‌کار'],[D.skills.length,'مهارت'],[D.site.gallery.length,'عکس گالری']].map(function(x){return '<div class="sc"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'}).join('');
+  api('commits?path=content.json&per_page=1&sha='+encodeURIComponent(CFG.b)).then(function(c){var d=c[0]&&c[0].commit.committer.date;$('#hinfo').innerHTML='✅ متصل به <b dir="ltr">'+esc(CFG.o+'/'+CFG.r)+'</b> — آخرین انتشار: '+(d?new Date(d).toLocaleString('fa-IR'):'—')}).catch(function(){$('#hinfo').textContent='✅ متصل به '+CFG.o+'/'+CFG.r});
+}
+
+/* ---------- actions ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target,x;
+  if(t.id==='addStat'){D.site.stats.push({value:'',label:{fa:'',en:''}});renderStats();mark()}
+  if(t.id==='addSkill'){D.skills.push({name:'',level:80});renderSkills();mark()}
+  if(t.id==='addWork'){D.apps.unshift({name:'',subtitle:{fa:'',en:''},icon:'',cover:'',images:[],desc:{fa:'',en:''},tech:[],links:[]});renderWorks();openWork(0);mark()}
+  if((x=t.dataset.del)){var p=x.split(':'),i=+p[1];if(!confirm('حذف بشه؟'))return;
+    if(p[0]==='stat')D.site.stats.splice(i,1),renderStats();if(p[0]==='skill')D.skills.splice(i,1),renderSkills();if(p[0]==='work')D.apps.splice(i,1),renderWorks();if(p[0]==='gal')D.site.gallery.splice(i,1),renderGallery();mark()}
+  if((x=t.dataset.ew)!=null&&x!=='')openWork(+x);
+  if((x=t.dataset.mv)){var q=x.split(':'),a=+q[0],b=a+ +q[1];if(b>=0&&b<D.apps.length){var tmp=D.apps[a];D.apps[a]=D.apps[b];D.apps[b]=tmp;renderWorks();mark()}}
+  if((x=t.dataset.gm)){var g=x.split(':'),a2=+g[0],b2=a2+ +g[1],G=D.site.gallery;if(b2>=0&&b2<G.length){var t2=G[a2];G[a2]=G[b2];G[b2]=t2;renderGallery();mark()}}
+  if(t.id==='wclose'){$('#wm').classList.remove('on');renderWorks()}
+  if(t.id==='wdone'){$('#wm').classList.remove('on');renderWorks()}
+  if((x=t.dataset.rmimg)){var r=x.split(':'),w=D.apps[+r[0]];if(r[1]==='icon')w.icon='';else if(r[1]==='cover')w.cover='';else w.images.splice(+r[2],1);openWork(+r[0]);mark()}
+  if((x=t.dataset.addl)!=null&&x!==''&&t.dataset.addl!==undefined){D.apps[+x].links.push({label:{fa:'',en:''},url:''});openWork(+x);mark()}
+  if((x=t.dataset.dell)){var l=x.split(':');D.apps[+l[0]].links.splice(+l[1],1);openWork(+l[0]);mark()}
+  if((x=t.dataset.trw)!=null&&x!==''&&t.dataset.trw!==undefined){var w2=D.apps[+x];t.disabled=true;t.textContent='در حال ترجمه...';
+    var tmp={site:{},apps:[w2],_tr:Object.assign({},D._tr||{})};SBM.autoTranslate(tmp).then(function(r){D._tr=Object.assign(D._tr||{},tmp._tr);toast(r.failed?'ترجمه‌ی خودکار در دسترس نبود':'✓ ترجمه شد');openWork(+x);mark()})}
+});
+function openWork(i){
+  var a=D.apps[i];a.links=a.links||[];a.images=a.images||[];
+  var thumb=function(u,kind,k){return '<div class="thw"><img class="th" src="'+esc(pv(u))+'" alt=""><button data-rmimg="'+i+':'+kind+(k!=null?':'+k:'')+'">×</button></div>'};
+  $('#wbox').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem"><h3 style="color:var(--gold)">ویرایش نمونه‌کار</h3><button class="btn s" id="wclose">✕</button></div>'+
+  '<div class="r2"><div><label>نام پروژه</label><input class="ltr" data-b="apps.'+i+'.name"></div><div><label>تکنولوژی‌ها (با کاما)</label><input class="ltr" data-b="apps.'+i+'.tech" value="'+esc((a.tech||[]).join(', '))+'"></div></div>'+
+  '<div class="r2"><div><label>زیرعنوان فارسی</label><input data-b="apps.'+i+'.subtitle.fa"></div><div><label>Subtitle (EN)</label><input class="ltr" data-b="apps.'+i+'.subtitle.en"></div></div>'+
+  '<div class="r2"><div><label>توضیحات فارسی</label><textarea data-b="apps.'+i+'.desc.fa" style="min-height:130px"></textarea></div><div><label>Description (EN) — خالی بذار تا خودکار ترجمه بشه</label><textarea class="ltr" data-b="apps.'+i+'.desc.en" style="min-height:130px"></textarea></div></div>'+
+  '<button class="btn s" data-trw="'+i+'" style="margin-top:.5rem">🌐 ترجمه‌ی همین پروژه</button>'+
+  '<div class="r2"><div><label>آیکن (مربعی)</label><input type="file" id="wi-icon" accept="image/*">'+(a.icon?thumb(a.icon,'icon'):'')+'</div><div><label>عکس اصلی (کاور)</label><input type="file" id="wi-cover" accept="image/*">'+(a.cover?thumb(a.cover,'cover'):'')+'</div></div>'+
+  '<label>عکس‌های بیشتر</label><input type="file" id="wi-more" accept="image/*" multiple><div>'+a.images.map(function(u,k){return thumb(u,'more',k)}).join('')+'</div><div class="hint" id="wst"></div>'+
+  '<label>لینک‌ها</label>'+a.links.map(function(l,j){return '<div class="r3" style="margin-bottom:.4rem"><div class="r2"><div><input data-b="apps.'+i+'.links.'+j+'.label.fa" placeholder="عنوان فارسی"></div><div><input class="ltr" data-b="apps.'+i+'.links.'+j+'.label.en" placeholder="Title EN"></div></div><div><input class="ltr" data-b="apps.'+i+'.links.'+j+'.url" placeholder="https://..."></div><button class="btn d s" data-dell="'+i+':'+j+'">×</button></div>'}).join('')+
+  '<button class="btn s" data-addl="'+i+'">+ لینک</button><div style="margin-top:1rem;text-align:left"><button class="btn p" id="wdone">✓ تمام</button></div>';
+  $('#wm').classList.add('on');bindAll();
+  var up=function(id,kind){var el=$('#'+id);el.onchange=function(){var fs=[].slice.call(el.files);if(!fs.length)return;$('#wst').textContent='در حال آپلود...';
+    fs.reduce(function(pr,f){return pr.then(function(){return uploadImg(f,'uploads/works',kind==='icon'?256:1600,kind==='icon').then(function(p){if(kind==='icon')a.icon=p;else if(kind==='cover')a.cover=p;else a.images.push(p)})})},Promise.resolve()).then(function(){mark();openWork(i)}).catch(function(e){$('#wst').textContent='خطا: '+e.message})}};
+  up('wi-icon','icon');up('wi-cover','cover');up('wi-more','more');
+}
+/* gallery / music / files */
+$('#galUp').onchange=function(){var fs=[].slice.call(this.files),el=this;if(!fs.length)return;toast('در حال آپلود...');
+  fs.reduce(function(pr,f){return pr.then(function(){return uploadImg(f,'uploads/gallery',1600,false).then(function(p){D.site.gallery.push(p)})})},Promise.resolve()).then(function(){renderGallery();mark();toast('✓ آپلود شد');el.value=''}).catch(function(e){toast('خطا: '+e.message)})};
+$('#musUp').onchange=function(){var f=this.files[0];if(!f)return;if(f.size>40*1024*1024){toast('فایل بزرگ‌تر از ۴۰ مگابایته');return}toast('در حال آپلود موزیک...');
+  var path='uploads/music/'+rid()+'.'+(f.name.split('.').pop()||'mp3').toLowerCase();blobB64(f).then(function(d){return putFile(path,d,'Upload music')}).then(function(){D.site.music=path;renderMusic();mark();toast('✓ موزیک آپلود شد')}).catch(function(e){toast('خطا: '+e.message)})};
+$('#musDel').onclick=function(){D.site.music='';renderMusic();mark()};
+$('#fGo').onclick=function(){var f=$('#fUp').files[0],p=$('#fPath').value.trim().replace(/^\/+/,'');if(!f||!p){toast('فایل و مسیر رو مشخص کن');return}
+  if(/\/$/.test(p))p+=f.name.replace(/\s+/g,'-');if(f.size>90*1024*1024){toast('بزرگ‌تر از ۹۰ مگابایته؛ از خود گیت‌هاب آپلود کن');return}
+  toast('در حال آپلود '+p+' ...');blobB64(f).then(function(d){return putFile(p,d,'Upload '+p)}).then(function(){toast('✓ آپلود شد: '+p)}).catch(function(e){toast('خطا: '+e.message)})};
+/* translate all */
+$('#trall').onclick=function(){var b=this;b.disabled=true;toast('در حال ترجمه...');SBM.autoTranslate(D,function(){}).then(function(r){bindAll();mark();toast(r.failed?'بخشی ترجمه نشد (سرویس ترجمه در دسترس نیست)':'✓ ترجمه شد')}).then(function(){b.disabled=false})};
+
+/* ---------- publish ---------- */
+$('#pub').onclick=function(){
+  var b=this;b.disabled=true;b.textContent='در حال انتشار...';
+  var pre=$('#autotr').checked?SBM.autoTranslate(D,function(){}).catch(function(){}):Promise.resolve();
+  pre.then(function(){D.site.stats=D.site.stats.filter(function(s){return s.value||(s.label&&(s.label.fa||s.label.en))});D.skills=D.skills.filter(function(s){return s.name});D.apps=D.apps.filter(function(a){return a.name});
+    return putFile('content.json',b64(JSON.stringify(D,null,2)),'Update content via SR5 admin')})
+   .then(function(){dirty=false;$('#dirty').textContent='';bindAll();renderAll();toast('✓ منتشر شد؛ تا یک دقیقه دیگه روی سایت دیده می‌شه')}).catch(function(e){toast('خطا: '+e.message)}).then(function(){b.disabled=false;b.textContent='🚀 انتشار روی سایت'});
+};
+window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue=''}});
+
+/* ---------- supabase sync ---------- */
+$('#syncGo').onclick=function(){
+  var log=function(m){var l=$('#slog');l.textContent+=m+'\n';l.scrollTop=l.scrollHeight},btn=this;$('#slog').textContent='';
+  if(typeof SUPABASE_URL==='undefined'||typeof SBM==='undefined'){log('❌ تنظیمات سوپابیس (admin/config.js) پیدا نشد');return}
+  btn.disabled=true;log('۱) خواندن اطلاعات سوپابیس...');var urlmap={},raw;
+  SBM.fetchAll(SUPABASE_URL,SUPABASE_ANON_KEY,9000).then(function(r){raw=r;Object.keys(r).forEach(function(k){log('   '+(r[k]?'✓ ':'✗ ')+k+(r[k]?' ('+r[k].length+')':''))});
+    var urls=[];(r.gallery_photos||[]).forEach(function(p){p.url&&urls.push(p.url)});(r.projects||[]).forEach(function(p){p.icon_url&&urls.push(p.icon_url);p.cover_url&&urls.push(p.cover_url);(p.images||[]).forEach(function(x){urls.push(x)})});(r.skills||[]).forEach(function(p){p.icon_url&&urls.push(p.icon_url)});if(r.site_music&&r.site_music[0]&&r.site_music[0].url)urls.push(r.site_music[0].url);
+    urls=urls.filter(function(u,i){return urls.indexOf(u)===i});if(!$('#cpm').checked)urls=[];log('۲) کپی '+urls.length+' فایل...');var n=0;
+    return urls.reduce(function(pr,u){return pr.then(function(){n++;return fetch(u).then(function(x){if(!x.ok)throw 0;return x.blob()}).then(function(bl){if(bl.size>45*1024*1024)throw 0;var nm=decodeURIComponent(u.split('?')[0].split('/').pop()).replace(/[^\w.\-]+/g,'_'),path='uploads/sb/'+nm;return blobB64(bl).then(function(d){return putFile(path,d,'Backup media '+nm)}).then(function(){urlmap[u]=path;log('   ✓ '+n+'/'+urls.length+' '+nm)})}).catch(function(){log('   ✗ '+n+'/'+urls.length+' رد شد')})})},Promise.resolve())})
+  .then(function(){log('۳) ادغام و ترجمه...');D=SBM.merge(D,raw,function(u){return urlmap[u]||u});return SBM.autoTranslate(D,log)})
+  .then(function(){log('۴) ذخیره‌ی content.json ...');return putFile('content.json',b64(JSON.stringify(D,null,2)),'Sync from Supabase via SR5 admin')})
+  .then(function(){log('۵) پشتیبان کامل ...');return putFile('supabase-backup.json',b64(JSON.stringify({saved_at:new Date().toISOString(),data:raw},null,2)),'Supabase full backup')})
+  .then(function(){dirty=false;$('#dirty').textContent='';bindAll();renderAll();log('\n✅ تمام شد.');toast('✓ همگام‌سازی انجام شد')}).catch(function(e){log('\n❌ خطا: '+(e&&e.message||'سوپابیس در دسترس نیست'))}).then(function(){btn.disabled=false});
+};
+
+/* ---------- security ---------- */
+$('#chg').onclick=function(){var u=$('#nu').value.trim(),p=$('#np').value;if(!u||p.length<8){toast('نام کاربری و رمز (حداقل ۸ کاراکتر) رو وارد کن');return}
+  Vault.create(u,p,{token:CFG.t,owner:CFG.o,repo:CFG.r,branch:CFG.b}).then(function(v){return putFile('vault.json',b64(JSON.stringify(v)),'Update admin vault')}).then(function(){$('#nu').value='';$('#np').value='';toast('✓ نام کاربری و رمز تغییر کرد')}).catch(function(e){toast('خطا: '+e.message)})};
+
+boot();
+})();
+</script>
+</body>
+</html>

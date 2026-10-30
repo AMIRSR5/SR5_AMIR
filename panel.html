@@ -194,7 +194,7 @@ function mark(){dirty=true;$('#dirty').textContent='● تغییرات منتش�
 
 /* ---------- GitHub API ---------- */
 function api(path,opt){opt=opt||{};opt.headers=Object.assign({Accept:'application/vnd.github+json',Authorization:'Bearer '+CFG.t,'X-GitHub-Api-Version':'2022-11-28'},opt.headers||{});
-  return fetch('https://api.github.com/repos/'+CFG.o+'/'+CFG.r+'/'+path,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(r.status+' '+(j.message||''));return j})})}
+  return fetch('https://api.github.com/repos/'+encodeURIComponent(CFG.o)+'/'+encodeURIComponent(CFG.r)+(path?'/'+path:''),opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(r.status+' '+(j.message||''));return j})})}
 function getFile(p){return api('contents/'+enc(p)+'?ref='+encodeURIComponent(CFG.b)).catch(function(){return null})}
 function putFile(p,data,msg){return getFile(p).then(function(f){var b={message:msg,content:data,branch:CFG.b};if(f&&f.sha)b.sha=f.sha;return api('contents/'+enc(p),{method:'PUT',body:JSON.stringify(b)})})}
 function blobB64(bl){return new Promise(function(res){var rd=new FileReader();rd.onload=function(){res(rd.result.split(',')[1])};rd.readAsDataURL(bl)})}
@@ -229,8 +229,9 @@ $('#sgo').onclick=function(){
   if(!t||!u||!p){showL('setup','همه‌ی فیلدها رو پر کن');return}
   if(p.length<8){showL('setup','رمز عبور باید حداقل ۸ کاراکتر باشه');return}
   CFG={o:o,r:r,b:b,t:t};$('#sgo').disabled=true;$('#lerr').textContent='در حال بررسی توکن...';
-  api('').then(function(){return Vault.create(u,p,{token:t,owner:o,repo:r,branch:b})}).then(function(v){return putFile('vault.json',b64(JSON.stringify(v)),'Update admin vault')})
-   .then(function(){sessionStorage.setItem('sr5s',JSON.stringify(CFG));toast('✓ نام کاربری و رمز ساخته شد');return enter()}).catch(function(e){CFG=null;showL('setup','خطا: '+e.message+' — توکن/ریپو رو چک کن')}).then(function(){$('#sgo').disabled=false});
+  var ctl=new AbortController(),tm=setTimeout(function(){ctl.abort()},9000);
+  fetch('https://api.github.com/zen',{signal:ctl.signal}).then(function(){clearTimeout(tm)},function(){clearTimeout(tm);throw new Error('NETDOWN')}).then(function(){return api('')}).then(function(){return Vault.create(u,p,{token:t,owner:o,repo:r,branch:b})}).then(function(v){return putFile('vault.json',b64(JSON.stringify(v)),'Update admin vault')})
+   .then(function(){sessionStorage.setItem('sr5s',JSON.stringify(CFG));toast('✓ نام کاربری و رمز ساخته شد');return enter()}).catch(function(e){CFG=null;showL('setup',e.message==='NETDOWN'||/fetch/i.test(e.message)?'به api.github.com دسترسی نداری (احتمالاً فیلتره). فیلترشکن رو روشن کن و دوباره امتحان کن.':'خطا: '+e.message+' — توکن/ریپو رو چک کن')}).then(function(){$('#sgo').disabled=false});
 };
 $('#logout').onclick=function(){sessionStorage.removeItem('sr5s');location.reload()};
 $('#close').onclick=function(){if(dirty&&!confirm('تغییرات منتشر نشده از بین می‌ره. بستن؟'))return;try{top.location.hash=''}catch(e){location.href='./'}};
